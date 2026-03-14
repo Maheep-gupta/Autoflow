@@ -1,0 +1,167 @@
+import React, { useState } from 'react'
+import { Node } from 'reactflow'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
+import { Trash2 } from 'lucide-react'
+
+interface ConfigPanelProps {
+  node: Node
+  onDelete: () => void
+  onChange: (node: Node) => void
+}
+
+export function ConfigPanel({ node, onDelete, onChange }: ConfigPanelProps) {
+  const [label, setLabel] = useState(node.data.label || '')
+  const [description, setDescription] = useState(node.data.description || '')
+  const [config, setConfig] = useState(node.data.config || {})
+
+  const handleSave = () => {
+    onChange({
+      ...node,
+      data: {
+        ...node.data,
+        label,
+        description,
+        config,
+      },
+    })
+  }
+
+  const getNodeTypeLabel = (type: string) => {
+    return type.charAt(0).toUpperCase() + type.slice(1)
+  }
+
+  return (
+    <div className="p-4 space-y-4">
+      <div>
+        <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase">
+          {getNodeTypeLabel(node.type)} Node
+        </p>
+      </div>
+
+      <div>
+        <label className="text-sm font-medium mb-2 block">Label</label>
+        <Input
+          value={label}
+          onChange={(e) => setLabel(e.target.value)}
+          placeholder="Node label"
+        />
+      </div>
+
+      <div>
+        <label className="text-sm font-medium mb-2 block">Description</label>
+        <Textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Add a description..."
+          className="resize-none h-20"
+        />
+      </div>
+
+      {node.type === 'action' && (
+        <>
+          <div>
+            <label className="text-sm font-medium mb-2 block">App/Service</label>
+            <Input placeholder="e.g., Slack, Gmail, Notion" />
+          </div>
+          <div>
+            <label className="text-sm font-medium mb-2 block">Message</label>
+            <Textarea placeholder="Enter the message or action" className="resize-none h-16" />
+          </div>
+        </>
+      )}
+
+      {node.type === 'condition' && (
+        <>
+          <div>
+            <label className="text-sm font-medium mb-2 block">Field</label>
+            <Input placeholder="Select field to check" />
+          </div>
+          <div>
+            <label className="text-sm font-medium mb-2 block">Condition</label>
+            <select className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground">
+              <option>equals</option>
+              <option>not equals</option>
+              <option>contains</option>
+              <option>greater than</option>
+              <option>less than</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-sm font-medium mb-2 block">Value</label>
+            <Input placeholder="Enter value" />
+          </div>
+        </>
+      )}
+
+      {node.type === 'delay' && (
+        <>
+          <div>
+            <label className="text-sm font-medium mb-2 block">Duration</label>
+            <Input type="number" placeholder="Enter duration" min="1" />
+          </div>
+          <div>
+            <label className="text-sm font-medium mb-2 block">Unit</label>
+            <select className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground">
+              <option>seconds</option>
+              <option>minutes</option>
+              <option>hours</option>
+              <option>days</option>
+            </select>
+          </div>
+        </>
+      )}
+
+      {node.type === 'webhook' && (
+        <>
+          <div>
+            <label className="text-sm font-medium mb-2 block">URL</label>
+            <Input placeholder="https://..." type="url" />
+          </div>
+          <div>
+            <label className="text-sm font-medium mb-2 block">Method</label>
+            <select className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground">
+              <option>GET</option>
+              <option>POST</option>
+              <option>PUT</option>
+              <option>DELETE</option>
+            </select>
+          </div>
+        </>
+      )}
+
+      {node.type === 'apiRequest' && (
+        <>
+          <div>
+            <label className="text-sm font-medium mb-2 block">Endpoint</label>
+            <Input placeholder="https://api.example.com/..." type="url" />
+          </div>
+          <div>
+            <label className="text-sm font-medium mb-2 block">Method</label>
+            <select className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground">
+              <option>GET</option>
+              <option>POST</option>
+              <option>PUT</option>
+              <option>DELETE</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-sm font-medium mb-2 block">Headers</label>
+            <Textarea placeholder="Authorization: Bearer token" className="resize-none h-16" />
+          </div>
+        </>
+      )}
+
+      <div className="space-y-2 pt-4 border-t border-border">
+        <Button onClick={handleSave} className="w-full">
+          Save Changes
+        </Button>
+        <Button onClick={onDelete} variant="destructive" className="w-full gap-2">
+          <Trash2 className="h-4 w-4" />
+          Delete Node
+        </Button>
+      </div>
+    </div>
+  )
+}
