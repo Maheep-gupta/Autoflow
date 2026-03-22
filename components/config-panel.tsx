@@ -16,6 +16,29 @@ export function ConfigPanel({ node, onDelete, onChange }: ConfigPanelProps) {
   const [description, setDescription] = useState(node.data.description || '')
   const [config, setConfig] = useState(node.data.config || {})
 
+  // Sync state when node selection changes
+  React.useEffect(() => {
+    setLabel(node.data.label || '')
+    setDescription(node.data.description || '')
+    setConfig(node.data.config || {})
+  }, [node.id])
+
+  // Auto-save on label/description change
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      onChange({
+        ...node,
+        data: {
+          ...node.data,
+          label,
+          description,
+          config,
+        },
+      })
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [label, description])
+
   const handleSave = () => {
     onChange({
       ...node,

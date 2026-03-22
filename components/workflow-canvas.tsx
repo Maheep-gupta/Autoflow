@@ -10,7 +10,6 @@ import ReactFlow, {
   useEdgesState,
   Background,
   Controls,
-  MiniMap,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 import { nodeTypes } from './workflow-nodes'
@@ -42,14 +41,29 @@ const initialEdges: Edge[] = [
   { id: 'e1-a2', source: 'trigger-1', target: 'action-2' },
 ]
 
-export function WorkflowCanvas() {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
+interface WorkflowCanvasProps {
+  isNew?: boolean
+}
+
+export function WorkflowCanvas({ isNew = false }: WorkflowCanvasProps) {
+  const emptyNodes: Node[] = []
+  const emptyEdges: Edge[] = []
+  
+  const [nodes, setNodes, onNodesChange] = useNodesState(isNew ? emptyNodes : initialNodes)
+  const [edges, setEdges, onEdgesChange] = useEdgesState(isNew ? emptyEdges : initialEdges)
   const [selectedNode, setSelectedNode] = useState<Node | null>(null)
 
   const onConnect = useCallback(
-    (connection: Connection) =>
-      setEdges((eds) => addEdge(connection, eds)),
+    (connection: Connection) => {
+      const newEdge: Edge = {
+        id: `e-${Date.now()}`,
+        source: connection.source!,
+        target: connection.target!,
+        animated: true,
+        style: { stroke: '#3b82f6', strokeWidth: 2 },
+      }
+      setEdges((eds) => addEdge(newEdge, eds))
+    },
     [setEdges]
   )
 
@@ -58,16 +72,31 @@ export function WorkflowCanvas() {
   }, [])
 
   const addNode = (type: string) => {
+    // Generate unique label based on node type count
+    const sameTypeNodes = nodes.filter((n) => n.type === type).length + 1
+    const typeNames = {
+      trigger: 'Trigger',
+      action: 'Action',
+      condition: 'Condition',
+      delay: 'Delay',
+      webhook: 'Webhook',
+      apiRequest: 'API Request',
+    }
+    const baseLabel = typeNames[type as keyof typeof typeNames] || type
+    const label = `${baseLabel} ${sameTypeNodes}`
+
     const newNode: Node = {
       id: `${type}-${Date.now()}`,
       type,
       position: {
-        x: Math.random() * 300,
-        y: Math.random() * 300,
+        x: Math.random() * 400 + 100,
+        y: Math.random() * 400 + 100,
       },
-      data: { label: `New ${type}` },
+      data: { label, description: '' },
     }
     setNodes((nds) => [...nds, newNode])
+    // Auto-select the new node
+    setSelectedNode(newNode)
   }
 
   const deleteNode = () => {
@@ -98,7 +127,6 @@ export function WorkflowCanvas() {
         >
           <Background />
           <Controls />
-          <MiniMap />
         </ReactFlow>
       </div>
 
