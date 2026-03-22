@@ -13,6 +13,7 @@ import {
 interface CustomNodeData {
   label: string
   type: string
+  onDelete?: (nodeId: string) => void
 }
 
 interface ExtendedNodeProps extends NodeProps<CustomNodeData> {
@@ -32,10 +33,7 @@ export const TriggerNode = (props: ExtendedNodeProps) => {
       <Handle type="source" position={Position.Bottom} id="out" />
       {showDelete && (
         <button
-          onClick={() => {
-            // Delete handler will be passed from parent
-            console.log('[v0] Delete node:', props.id)
-          }}
+          onClick={() => props.data.onDelete?.(props.id)}
           className="absolute -top-3 -right-3 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg z-50"
           title="Delete node"
         >
@@ -64,9 +62,7 @@ export const ActionNode = (props: ExtendedNodeProps) => {
       <Handle type="source" position={Position.Bottom} id="out" />
       {showDelete && (
         <button
-          onClick={() => {
-            console.log('[v0] Delete node:', props.id)
-          }}
+          onClick={() => props.data.onDelete?.(props.id)}
           className="absolute -top-3 -right-3 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg z-50"
           title="Delete node"
         >
@@ -96,9 +92,7 @@ export const ConditionNode = (props: ExtendedNodeProps) => {
       <Handle type="source" position={Position.Right} id="false" />
       {showDelete && (
         <button
-          onClick={() => {
-            console.log('[v0] Delete node:', props.id)
-          }}
+          onClick={() => props.data.onDelete?.(props.id)}
           className="absolute -top-3 -right-3 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg z-50"
           title="Delete node"
         >
@@ -127,9 +121,7 @@ export const DelayNode = (props: ExtendedNodeProps) => {
       <Handle type="source" position={Position.Bottom} id="out" />
       {showDelete && (
         <button
-          onClick={() => {
-            console.log('[v0] Delete node:', props.id)
-          }}
+          onClick={() => props.data.onDelete?.(props.id)}
           className="absolute -top-3 -right-3 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg z-50"
           title="Delete node"
         >
@@ -158,9 +150,7 @@ export const WebhookNode = (props: ExtendedNodeProps) => {
       <Handle type="source" position={Position.Bottom} id="out" />
       {showDelete && (
         <button
-          onClick={() => {
-            console.log('[v0] Delete node:', props.id)
-          }}
+          onClick={() => props.data.onDelete?.(props.id)}
           className="absolute -top-3 -right-3 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg z-50"
           title="Delete node"
         >
@@ -189,9 +179,7 @@ export const ApiRequestNode = (props: ExtendedNodeProps) => {
       <Handle type="source" position={Position.Bottom} id="out" />
       {showDelete && (
         <button
-          onClick={() => {
-            console.log('[v0] Delete node:', props.id)
-          }}
+          onClick={() => props.data.onDelete?.(props.id)}
           className="absolute -top-3 -right-3 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg z-50"
           title="Delete node"
         >

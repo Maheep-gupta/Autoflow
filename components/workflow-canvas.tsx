@@ -99,17 +99,33 @@ export function WorkflowCanvas({ isNew = false }: WorkflowCanvasProps) {
     setSelectedNode(newNode)
   }
 
-  const deleteSelectedNode = () => {
-    if (selectedNode) {
-      setNodes((nds) => nds.filter((n) => n.id !== selectedNode.id))
-      setEdges((eds) =>
-        eds.filter(
-          (e) => e.source !== selectedNode.id && e.target !== selectedNode.id
-        )
+  const deleteNode = (nodeId: string) => {
+    setNodes((nds) => nds.filter((n) => n.id !== nodeId))
+    setEdges((eds) =>
+      eds.filter(
+        (e) => e.source !== nodeId && e.target !== nodeId
       )
+    )
+    if (selectedNode?.id === nodeId) {
       setSelectedNode(null)
     }
   }
+
+  const deleteSelectedNode = () => {
+    if (selectedNode) {
+      deleteNode(selectedNode.id)
+    }
+  }
+
+  // Update nodes with delete handler when they change
+  React.useEffect(() => {
+    setNodes((nds) =>
+      nds.map((n) => ({
+        ...n,
+        data: { ...n.data, onDelete: deleteNode }
+      }))
+    )
+  }, [setNodes])
 
   return (
     <div className="flex w-full h-full gap-4 bg-background text-foreground p-4">

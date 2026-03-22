@@ -8,14 +8,30 @@ import { ChevronLeft, Save, Play, Settings, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 
 export default function WorkflowBuilderPage({ params }: { params: { id: string } }) {
-  const isNewWorkflow = params.id === 'new'
-  const [workflowName, setWorkflowName] = useState('Slack Notification on New Email')
-  const [workflowDescription, setWorkflowDescription] = useState(
-    'Send Slack message when new email arrives in Gmail'
-  )
-  const [isSettingsOpen, setIsSettingsOpen] = useState(isNewWorkflow)
+  const isNewWorkflow = params.id.includes('workflow-')
+  const [workflowName, setWorkflowName] = useState('')
+  const [workflowDescription, setWorkflowDescription] = useState('')
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
   const [isRunning, setIsRunning] = useState(false)
+
+  // Load workflow data from sessionStorage on mount
+  React.useEffect(() => {
+    if (isNewWorkflow) {
+      const savedData = sessionStorage.getItem('newWorkflowData')
+      if (savedData) {
+        const { name, description } = JSON.parse(savedData)
+        setWorkflowName(name || '')
+        setWorkflowDescription(description || '')
+        // Clear sessionStorage after reading
+        sessionStorage.removeItem('newWorkflowData')
+      }
+    } else {
+      // For existing workflows, set default values
+      setWorkflowName('Slack Notification on New Email')
+      setWorkflowDescription('Send Slack message when new email arrives in Gmail')
+    }
+  }, [isNewWorkflow])
 
   const handleSave = () => {
     console.log('[v0] Saving workflow:', { workflowName, workflowDescription })
