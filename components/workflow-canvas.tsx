@@ -130,7 +130,16 @@ export function WorkflowCanvas({ isNew = false }: WorkflowCanvasProps) {
   return (
     <div className="flex w-full h-full gap-4 bg-background text-foreground p-4">
       {/* Canvas */}
-      <div className="flex-1 border border-border rounded-lg overflow-hidden bg-background">
+      <div className="flex-1 border border-border rounded-lg overflow-hidden bg-gradient-to-br from-background to-muted/20 relative">
+        {nodes.length === 0 && (
+          <div className="absolute inset-0 flex items-center justify-center z-10">
+            <div className="text-center">
+              <div className="text-4xl mb-3 opacity-20">📋</div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">No nodes yet</h3>
+              <p className="text-sm text-muted-foreground">Add your first node from the panel to get started</p>
+            </div>
+          </div>
+        )}
         <ReactFlow
           nodes={nodes}
           edges={edges}

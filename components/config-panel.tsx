@@ -56,43 +56,45 @@ export function ConfigPanel({ node, onDelete, onChange }: ConfigPanelProps) {
   }
 
   return (
-    <div className="p-4 space-y-4">
-      <div>
-        <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase">
+    <div className="p-4 space-y-5 h-full overflow-y-auto">
+      <div className="pb-3 border-b border-border">
+        <p className="text-xs font-bold text-primary uppercase tracking-wider">
           {getNodeTypeLabel(node.type)} Node
         </p>
+        <p className="text-xs text-muted-foreground mt-1">Configure node settings</p>
       </div>
 
-      <div>
-        <label className="text-sm font-medium mb-2 block">Label</label>
+      <div className="space-y-2">
+        <label className="text-sm font-semibold mb-2 block text-foreground">Label</label>
         <Input
           value={label}
           onChange={(e) => setLabel(e.target.value)}
           placeholder="Node label"
+          className="text-sm"
         />
       </div>
 
-      <div>
-        <label className="text-sm font-medium mb-2 block">Description</label>
+      <div className="space-y-2">
+        <label className="text-sm font-semibold mb-2 block text-foreground">Description</label>
         <Textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Add a description..."
-          className="resize-none h-20"
+          className="resize-none h-20 text-sm"
         />
       </div>
 
       {node.type === 'action' && (
-        <>
-          <div>
-            <label className="text-sm font-medium mb-2 block">App/Service</label>
-            <Input placeholder="e.g., Slack, Gmail, Notion" />
+        <div className="space-y-4 pt-2">
+          <div className="space-y-2">
+            <label className="text-sm font-semibold block text-foreground">App/Service</label>
+            <Input placeholder="e.g., Slack, Gmail, Notion" className="text-sm" />
           </div>
-          <div>
-            <label className="text-sm font-medium mb-2 block">Message</label>
-            <Textarea placeholder="Enter the message or action" className="resize-none h-16" />
+          <div className="space-y-2">
+            <label className="text-sm font-semibold block text-foreground">Message</label>
+            <Textarea placeholder="Enter the message or action" className="resize-none h-16 text-sm" />
           </div>
-        </>
+        </div>
       )}
 
       {node.type === 'condition' && (
