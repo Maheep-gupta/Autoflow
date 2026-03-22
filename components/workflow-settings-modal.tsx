@@ -24,6 +24,11 @@ export function WorkflowSettingsModal({
   const [name, setName] = useState(workflowName)
   const [description, setDescription] = useState(workflowDescription)
 
+  React.useEffect(() => {
+    setName(workflowName)
+    setDescription(workflowDescription)
+  }, [workflowName, workflowDescription])
+
   const handleSave = () => {
     onSave(name, description)
     onClose()

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Handle, Position, NodeProps } from 'reactflow'
 import {
   Zap,
@@ -7,37 +7,41 @@ import {
   GitBranch,
   Webhook,
   Database,
+  X,
 } from 'lucide-react'
-
-const nodeStyles = {
-  base: 'rounded-lg border-2 p-4 bg-card text-foreground shadow-md min-w-[180px]',
-  trigger: 'border-primary',
-  action: 'border-blue-500',
-  condition: 'border-yellow-500',
-  delay: 'border-purple-500',
-  webhook: 'border-green-500',
-  api: 'border-orange-500',
-}
-
-const iconMap = {
-  trigger: Zap,
-  action: Zap,
-  condition: GitBranch,
-  delay: Clock,
-  webhook: Webhook,
-  apiRequest: Database,
-}
 
 interface CustomNodeData {
   label: string
   type: string
 }
 
-export const TriggerNode = (props: NodeProps<CustomNodeData>) => {
+interface ExtendedNodeProps extends NodeProps<CustomNodeData> {
+  id: string
+}
+
+export const TriggerNode = (props: ExtendedNodeProps) => {
+  const [showDelete, setShowDelete] = useState(false)
   const Icon = Zap
   return (
-    <div className={`${nodeStyles.base} ${nodeStyles.trigger}`}>
-      <Handle type="output" position={Position.Bottom} />
+    <div
+      className="relative rounded-lg border-2 border-green-500 p-4 bg-card text-foreground shadow-md min-w-[200px] hover:shadow-lg transition-shadow"
+      onMouseEnter={() => setShowDelete(true)}
+      onMouseLeave={() => setShowDelete(false)}
+    >
+      <Handle type="target" position={Position.Top} className="opacity-0" />
+      <Handle type="source" position={Position.Bottom} id="out" />
+      {showDelete && (
+        <button
+          onClick={() => {
+            // Delete handler will be passed from parent
+            console.log('[v0] Delete node:', props.id)
+          }}
+          className="absolute -top-3 -right-3 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg z-50"
+          title="Delete node"
+        >
+          <X className="h-3 w-3" />
+        </button>
+      )}
       <div className="flex items-center gap-2 mb-2">
         <Icon className="h-4 w-4" />
         <span className="font-semibold text-sm">Trigger</span>
@@ -47,12 +51,28 @@ export const TriggerNode = (props: NodeProps<CustomNodeData>) => {
   )
 }
 
-export const ActionNode = (props: NodeProps<CustomNodeData>) => {
+export const ActionNode = (props: ExtendedNodeProps) => {
+  const [showDelete, setShowDelete] = useState(false)
   const Icon = Zap
   return (
-    <div className={`${nodeStyles.base} ${nodeStyles.action}`}>
-      <Handle type="input" position={Position.Top} />
-      <Handle type="output" position={Position.Bottom} />
+    <div
+      className="relative rounded-lg border-2 border-blue-500 p-4 bg-card text-foreground shadow-md min-w-[200px] hover:shadow-lg transition-shadow"
+      onMouseEnter={() => setShowDelete(true)}
+      onMouseLeave={() => setShowDelete(false)}
+    >
+      <Handle type="target" position={Position.Top} id="in" />
+      <Handle type="source" position={Position.Bottom} id="out" />
+      {showDelete && (
+        <button
+          onClick={() => {
+            console.log('[v0] Delete node:', props.id)
+          }}
+          className="absolute -top-3 -right-3 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg z-50"
+          title="Delete node"
+        >
+          <X className="h-3 w-3" />
+        </button>
+      )}
       <div className="flex items-center gap-2 mb-2">
         <Icon className="h-4 w-4" />
         <span className="font-semibold text-sm">Action</span>
@@ -62,13 +82,29 @@ export const ActionNode = (props: NodeProps<CustomNodeData>) => {
   )
 }
 
-export const ConditionNode = (props: NodeProps<CustomNodeData>) => {
+export const ConditionNode = (props: ExtendedNodeProps) => {
+  const [showDelete, setShowDelete] = useState(false)
   const Icon = GitBranch
   return (
-    <div className={`${nodeStyles.base} ${nodeStyles.condition}`}>
-      <Handle type="input" position={Position.Top} />
-      <Handle type="output" position={Position.Bottom} id="true" />
-      <Handle type="output" position={Position.Right} id="false" />
+    <div
+      className="relative rounded-lg border-2 border-yellow-500 p-4 bg-card text-foreground shadow-md min-w-[200px] hover:shadow-lg transition-shadow"
+      onMouseEnter={() => setShowDelete(true)}
+      onMouseLeave={() => setShowDelete(false)}
+    >
+      <Handle type="target" position={Position.Top} id="in" />
+      <Handle type="source" position={Position.Bottom} id="true" />
+      <Handle type="source" position={Position.Right} id="false" />
+      {showDelete && (
+        <button
+          onClick={() => {
+            console.log('[v0] Delete node:', props.id)
+          }}
+          className="absolute -top-3 -right-3 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg z-50"
+          title="Delete node"
+        >
+          <X className="h-3 w-3" />
+        </button>
+      )}
       <div className="flex items-center gap-2 mb-2">
         <Icon className="h-4 w-4" />
         <span className="font-semibold text-sm">Condition</span>
@@ -78,12 +114,28 @@ export const ConditionNode = (props: NodeProps<CustomNodeData>) => {
   )
 }
 
-export const DelayNode = (props: NodeProps<CustomNodeData>) => {
+export const DelayNode = (props: ExtendedNodeProps) => {
+  const [showDelete, setShowDelete] = useState(false)
   const Icon = Clock
   return (
-    <div className={`${nodeStyles.base} ${nodeStyles.delay}`}>
-      <Handle type="input" position={Position.Top} />
-      <Handle type="output" position={Position.Bottom} />
+    <div
+      className="relative rounded-lg border-2 border-purple-500 p-4 bg-card text-foreground shadow-md min-w-[200px] hover:shadow-lg transition-shadow"
+      onMouseEnter={() => setShowDelete(true)}
+      onMouseLeave={() => setShowDelete(false)}
+    >
+      <Handle type="target" position={Position.Top} id="in" />
+      <Handle type="source" position={Position.Bottom} id="out" />
+      {showDelete && (
+        <button
+          onClick={() => {
+            console.log('[v0] Delete node:', props.id)
+          }}
+          className="absolute -top-3 -right-3 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg z-50"
+          title="Delete node"
+        >
+          <X className="h-3 w-3" />
+        </button>
+      )}
       <div className="flex items-center gap-2 mb-2">
         <Icon className="h-4 w-4" />
         <span className="font-semibold text-sm">Delay</span>
@@ -93,12 +145,28 @@ export const DelayNode = (props: NodeProps<CustomNodeData>) => {
   )
 }
 
-export const WebhookNode = (props: NodeProps<CustomNodeData>) => {
+export const WebhookNode = (props: ExtendedNodeProps) => {
+  const [showDelete, setShowDelete] = useState(false)
   const Icon = Webhook
   return (
-    <div className={`${nodeStyles.base} ${nodeStyles.webhook}`}>
-      <Handle type="input" position={Position.Top} />
-      <Handle type="output" position={Position.Bottom} />
+    <div
+      className="relative rounded-lg border-2 border-green-600 p-4 bg-card text-foreground shadow-md min-w-[200px] hover:shadow-lg transition-shadow"
+      onMouseEnter={() => setShowDelete(true)}
+      onMouseLeave={() => setShowDelete(false)}
+    >
+      <Handle type="target" position={Position.Top} id="in" />
+      <Handle type="source" position={Position.Bottom} id="out" />
+      {showDelete && (
+        <button
+          onClick={() => {
+            console.log('[v0] Delete node:', props.id)
+          }}
+          className="absolute -top-3 -right-3 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg z-50"
+          title="Delete node"
+        >
+          <X className="h-3 w-3" />
+        </button>
+      )}
       <div className="flex items-center gap-2 mb-2">
         <Icon className="h-4 w-4" />
         <span className="font-semibold text-sm">Webhook</span>
@@ -108,12 +176,28 @@ export const WebhookNode = (props: NodeProps<CustomNodeData>) => {
   )
 }
 
-export const ApiRequestNode = (props: NodeProps<CustomNodeData>) => {
+export const ApiRequestNode = (props: ExtendedNodeProps) => {
+  const [showDelete, setShowDelete] = useState(false)
   const Icon = Database
   return (
-    <div className={`${nodeStyles.base} ${nodeStyles.api}`}>
-      <Handle type="input" position={Position.Top} />
-      <Handle type="output" position={Position.Bottom} />
+    <div
+      className="relative rounded-lg border-2 border-orange-500 p-4 bg-card text-foreground shadow-md min-w-[200px] hover:shadow-lg transition-shadow"
+      onMouseEnter={() => setShowDelete(true)}
+      onMouseLeave={() => setShowDelete(false)}
+    >
+      <Handle type="target" position={Position.Top} id="in" />
+      <Handle type="source" position={Position.Bottom} id="out" />
+      {showDelete && (
+        <button
+          onClick={() => {
+            console.log('[v0] Delete node:', props.id)
+          }}
+          className="absolute -top-3 -right-3 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg z-50"
+          title="Delete node"
+        >
+          <X className="h-3 w-3" />
+        </button>
+      )}
       <div className="flex items-center gap-2 mb-2">
         <Icon className="h-4 w-4" />
         <span className="font-semibold text-sm">API Request</span>

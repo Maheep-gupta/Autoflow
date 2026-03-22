@@ -99,7 +99,7 @@ export function WorkflowCanvas({ isNew = false }: WorkflowCanvasProps) {
     setSelectedNode(newNode)
   }
 
-  const deleteNode = () => {
+  const deleteSelectedNode = () => {
     if (selectedNode) {
       setNodes((nds) => nds.filter((n) => n.id !== selectedNode.id))
       setEdges((eds) =>
@@ -112,9 +112,9 @@ export function WorkflowCanvas({ isNew = false }: WorkflowCanvasProps) {
   }
 
   return (
-    <div className="flex h-screen gap-6 bg-background">
+    <div className="flex w-full h-full gap-4 bg-background text-foreground p-4">
       {/* Canvas */}
-      <div className="flex-1 border border-border rounded-lg overflow-hidden">
+      <div className="flex-1 border border-border rounded-lg overflow-hidden bg-background">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -131,56 +131,80 @@ export function WorkflowCanvas({ isNew = false }: WorkflowCanvasProps) {
       </div>
 
       {/* Sidebar */}
-      <div className="w-80 border-l border-border flex flex-col bg-card">
+      <div className="w-72 border border-border rounded-lg flex flex-col bg-card overflow-hidden">
         {/* Node Library */}
-        <div className="flex-1 overflow-y-auto p-4 border-b border-border">
-          <h3 className="font-semibold mb-4">Add Nodes</h3>
+        <div className="flex-none p-4 border-b border-border">
+          <h3 className="font-semibold mb-4 text-foreground">Add Nodes</h3>
           <div className="space-y-2">
             <button
               onClick={() => addNode('trigger')}
-              className="w-full p-3 bg-primary/10 text-primary text-sm font-medium rounded hover:bg-primary/20 transition"
+              className="w-full p-3 bg-green-500/10 text-green-600 dark:text-green-400 text-sm font-medium rounded hover:bg-green-500/20 transition group relative"
+              title="Start point of workflow - e.g., New Email"
             >
               Trigger
+              <span className="absolute left-0 bottom-full mb-2 hidden group-hover:block bg-foreground text-background text-xs rounded p-2 whitespace-nowrap z-50">
+                Start point - e.g., New Email
+              </span>
             </button>
             <button
               onClick={() => addNode('action')}
-              className="w-full p-3 bg-blue-500/10 text-blue-600 dark:text-blue-400 text-sm font-medium rounded hover:bg-blue-500/20 transition"
+              className="w-full p-3 bg-blue-500/10 text-blue-600 dark:text-blue-400 text-sm font-medium rounded hover:bg-blue-500/20 transition group relative"
+              title="Perform an action - e.g., Send Message"
             >
               Action
+              <span className="absolute left-0 bottom-full mb-2 hidden group-hover:block bg-foreground text-background text-xs rounded p-2 whitespace-nowrap z-50">
+                Perform action - e.g., Send Message
+              </span>
             </button>
             <button
               onClick={() => addNode('condition')}
-              className="w-full p-3 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 text-sm font-medium rounded hover:bg-yellow-500/20 transition"
+              className="w-full p-3 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 text-sm font-medium rounded hover:bg-yellow-500/20 transition group relative"
+              title="Branch logic - true/false paths"
             >
               Condition
+              <span className="absolute left-0 bottom-full mb-2 hidden group-hover:block bg-foreground text-background text-xs rounded p-2 whitespace-nowrap z-50">
+                Branch logic - yes/no paths
+              </span>
             </button>
             <button
               onClick={() => addNode('delay')}
-              className="w-full p-3 bg-purple-500/10 text-purple-600 dark:text-purple-400 text-sm font-medium rounded hover:bg-purple-500/20 transition"
+              className="w-full p-3 bg-purple-500/10 text-purple-600 dark:text-purple-400 text-sm font-medium rounded hover:bg-purple-500/20 transition group relative"
+              title="Wait before next action"
             >
               Delay
+              <span className="absolute left-0 bottom-full mb-2 hidden group-hover:block bg-foreground text-background text-xs rounded p-2 whitespace-nowrap z-50">
+                Wait time - e.g., 5 minutes
+              </span>
             </button>
             <button
               onClick={() => addNode('webhook')}
-              className="w-full p-3 bg-green-500/10 text-green-600 dark:text-green-400 text-sm font-medium rounded hover:bg-green-500/20 transition"
+              className="w-full p-3 bg-green-600/10 text-emerald-600 dark:text-emerald-400 text-sm font-medium rounded hover:bg-green-600/20 transition group relative"
+              title="Receive external events"
             >
               Webhook
+              <span className="absolute left-0 bottom-full mb-2 hidden group-hover:block bg-foreground text-background text-xs rounded p-2 whitespace-nowrap z-50">
+                Receive events from apps
+              </span>
             </button>
             <button
               onClick={() => addNode('apiRequest')}
-              className="w-full p-3 bg-orange-500/10 text-orange-600 dark:text-orange-400 text-sm font-medium rounded hover:bg-orange-500/20 transition"
+              className="w-full p-3 bg-orange-500/10 text-orange-600 dark:text-orange-400 text-sm font-medium rounded hover:bg-orange-500/20 transition group relative"
+              title="Make API calls"
             >
               API Request
+              <span className="absolute left-0 bottom-full mb-2 hidden group-hover:block bg-foreground text-background text-xs rounded p-2 whitespace-nowrap z-50">
+                Call external APIs
+              </span>
             </button>
           </div>
         </div>
 
         {/* Config Panel */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto bg-card">
           {selectedNode ? (
             <ConfigPanel
               node={selectedNode}
-              onDelete={deleteNode}
+              onDelete={deleteSelectedNode}
               onChange={(updatedNode) => {
                 setNodes((nds) =>
                   nds.map((n) => (n.id === updatedNode.id ? updatedNode : n))
