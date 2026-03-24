@@ -171,18 +171,18 @@ export function WorkflowCanvas({ isNew = false }: WorkflowCanvasProps) {
         <div className="flex-1 overflow-y-auto border-b border-border">
           <div className="p-4 space-y-4">
             <div>
-              <h3 className="font-bold text-foreground mb-3 text-sm uppercase tracking-wider">Basic</h3>
+              <h3 className="font-bold text-foreground mb-3 text-sm uppercase tracking-wider text-xs">Basic</h3>
               <div className="space-y-2">
                 <button
                   onClick={() => addNode('trigger')}
-                  className="w-full p-3 bg-green-500/10 text-green-700 dark:text-green-400 text-sm font-medium rounded-lg hover:bg-green-500/20 transition text-left"
+                  className="w-full p-3 bg-gradient-to-r from-green-500/20 to-green-600/10 text-green-700 dark:from-green-600/20 dark:to-green-700/10 dark:text-green-300 text-sm font-semibold rounded-lg hover:from-green-600 hover:to-green-700 hover:text-white hover:shadow-lg transition-all duration-200 text-left border border-green-500/30 hover:border-green-500/60 cursor-pointer"
                   title="Start your workflow"
                 >
                   🚀 Trigger
                 </button>
                 <button
                   onClick={() => addNode('action')}
-                  className="w-full p-3 bg-blue-500/10 text-blue-700 dark:text-blue-400 text-sm font-medium rounded-lg hover:bg-blue-500/20 transition text-left"
+                  className="w-full p-3 bg-gradient-to-r from-blue-500/20 to-blue-600/10 text-blue-700 dark:from-blue-600/20 dark:to-blue-700/10 dark:text-blue-300 text-sm font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 hover:text-white hover:shadow-lg transition-all duration-200 text-left border border-blue-500/30 hover:border-blue-500/60 cursor-pointer"
                   title="Perform action on app"
                 >
                   ⚡ Action
@@ -191,29 +191,29 @@ export function WorkflowCanvas({ isNew = false }: WorkflowCanvasProps) {
             </div>
 
             <div>
-              <h3 className="font-bold text-foreground mb-3 text-sm uppercase tracking-wider">Control Flow</h3>
+              <h3 className="font-bold text-foreground mb-3 text-xs uppercase tracking-wider">Control Flow</h3>
               <div className="space-y-2">
                 <button
                   onClick={() => addNode('condition')}
-                  className="w-full p-3 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 text-sm font-medium rounded-lg hover:bg-yellow-500/20 transition text-left"
+                  className="w-full p-3 bg-gradient-to-r from-yellow-500/20 to-yellow-600/10 text-yellow-700 dark:from-yellow-600/20 dark:to-yellow-700/10 dark:text-yellow-300 text-sm font-semibold rounded-lg hover:from-yellow-600 hover:to-yellow-700 hover:text-white hover:shadow-lg transition-all duration-200 text-left border border-yellow-500/30 hover:border-yellow-500/60 cursor-pointer"
                 >
                   ❓ Condition
                 </button>
                 <button
                   onClick={() => addNode('if')}
-                  className="w-full p-3 bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 text-sm font-medium rounded-lg hover:bg-indigo-500/20 transition text-left"
+                  className="w-full p-3 bg-gradient-to-r from-indigo-500/20 to-indigo-600/10 text-indigo-700 dark:from-indigo-600/20 dark:to-indigo-700/10 dark:text-indigo-300 text-sm font-semibold rounded-lg hover:from-indigo-600 hover:to-indigo-700 hover:text-white hover:shadow-lg transition-all duration-200 text-left border border-indigo-500/30 hover:border-indigo-500/60 cursor-pointer"
                 >
                   🔀 If Node
                 </button>
                 <button
                   onClick={() => addNode('ifElse')}
-                  className="w-full p-3 bg-violet-500/10 text-violet-700 dark:text-violet-400 text-sm font-medium rounded-lg hover:bg-violet-500/20 transition text-left"
+                  className="w-full p-3 bg-gradient-to-r from-violet-500/20 to-violet-600/10 text-violet-700 dark:from-violet-600/20 dark:to-violet-700/10 dark:text-violet-300 text-sm font-semibold rounded-lg hover:from-violet-600 hover:to-violet-700 hover:text-white hover:shadow-lg transition-all duration-200 text-left border border-violet-500/30 hover:border-violet-500/60 cursor-pointer"
                 >
                   🔄 If-Else
                 </button>
                 <button
                   onClick={() => addNode('switch')}
-                  className="w-full p-3 bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 text-sm font-medium rounded-lg hover:bg-cyan-500/20 transition text-left"
+                  className="w-full p-3 bg-gradient-to-r from-cyan-500/20 to-cyan-600/10 text-cyan-700 dark:from-cyan-600/20 dark:to-cyan-700/10 dark:text-cyan-300 text-sm font-semibold rounded-lg hover:from-cyan-600 hover:to-cyan-700 hover:text-white hover:shadow-lg transition-all duration-200 text-left border border-cyan-500/30 hover:border-cyan-500/60 cursor-pointer"
                 >
                   🎯 Switch
                 </button>
@@ -221,23 +221,23 @@ export function WorkflowCanvas({ isNew = false }: WorkflowCanvasProps) {
             </div>
 
             <div>
-              <h3 className="font-bold text-foreground mb-3 text-sm uppercase tracking-wider">Loops</h3>
+              <h3 className="font-bold text-foreground mb-3 text-xs uppercase tracking-wider">Loops</h3>
               <div className="space-y-2">
                 <button
                   onClick={() => addNode('forLoop')}
-                  className="w-full p-3 bg-red-500/10 text-red-700 dark:text-red-400 text-sm font-medium rounded-lg hover:bg-red-500/20 transition text-left"
+                  className="w-full p-3 bg-gradient-to-r from-red-500/20 to-red-600/10 text-red-700 dark:from-red-600/20 dark:to-red-700/10 dark:text-red-300 text-sm font-semibold rounded-lg hover:from-red-600 hover:to-red-700 hover:text-white hover:shadow-lg transition-all duration-200 text-left border border-red-500/30 hover:border-red-500/60 cursor-pointer"
                 >
                   🔁 For Loop
                 </button>
                 <button
                   onClick={() => addNode('whileLoop')}
-                  className="w-full p-3 bg-rose-500/10 text-rose-700 dark:text-rose-400 text-sm font-medium rounded-lg hover:bg-rose-500/20 transition text-left"
+                  className="w-full p-3 bg-gradient-to-r from-rose-500/20 to-rose-600/10 text-rose-700 dark:from-rose-600/20 dark:to-rose-700/10 dark:text-rose-300 text-sm font-semibold rounded-lg hover:from-rose-600 hover:to-rose-700 hover:text-white hover:shadow-lg transition-all duration-200 text-left border border-rose-500/30 hover:border-rose-500/60 cursor-pointer"
                 >
                   ⏱️ While Loop
                 </button>
                 <button
                   onClick={() => addNode('delay')}
-                  className="w-full p-3 bg-purple-500/10 text-purple-700 dark:text-purple-400 text-sm font-medium rounded-lg hover:bg-purple-500/20 transition text-left"
+                  className="w-full p-3 bg-gradient-to-r from-purple-500/20 to-purple-600/10 text-purple-700 dark:from-purple-600/20 dark:to-purple-700/10 dark:text-purple-300 text-sm font-semibold rounded-lg hover:from-purple-600 hover:to-purple-700 hover:text-white hover:shadow-lg transition-all duration-200 text-left border border-purple-500/30 hover:border-purple-500/60 cursor-pointer"
                 >
                   ⏸️ Delay
                 </button>
