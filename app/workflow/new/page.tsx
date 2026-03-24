@@ -20,16 +20,19 @@ export default function NewWorkflowPage() {
     }
 
     // Store the workflow data in sessionStorage to pass to the builder
-    sessionStorage.setItem(
-      'newWorkflowData',
-      JSON.stringify({
-        name: workflowName,
-        description: workflowDescription,
-      })
-    )
+    const workflowData = {
+      name: workflowName.trim(),
+      description: workflowDescription.trim(),
+    }
+    
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('newWorkflowData', JSON.stringify(workflowData))
+      console.log('[v0] Stored workflow data:', workflowData)
+    }
 
     // Redirect to the workflow builder with the new workflow ID
     const workflowId = `workflow-${Date.now()}`
+    console.log('[v0] Redirecting to workflow:', workflowId)
     router.push(`/workflow/${workflowId}`)
   }
 

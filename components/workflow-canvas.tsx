@@ -74,15 +74,25 @@ export function WorkflowCanvas({ isNew = false }: WorkflowCanvasProps) {
   const addNode = (type: string) => {
     // Generate unique label based on node type count
     const sameTypeNodes = nodes.filter((n) => n.type === type).length + 1
-    const typeNames = {
+    const typeNames: { [key: string]: string } = {
       trigger: 'Trigger',
       action: 'Action',
       condition: 'Condition',
       delay: 'Delay',
       webhook: 'Webhook',
       apiRequest: 'API Request',
+      if: 'If',
+      else: 'Else',
+      ifElse: 'If-Else',
+      switch: 'Switch',
+      forLoop: 'For Loop',
+      whileLoop: 'While Loop',
+      openBrowser: 'Open URL',
+      fillInput: 'Fill Input',
+      clickElement: 'Click Element',
+      screenshot: 'Screenshot',
     }
-    const baseLabel = typeNames[type as keyof typeof typeNames] || type
+    const baseLabel = typeNames[type] || type
     const label = `${baseLabel} ${sameTypeNodes}`
 
     const newNode: Node = {
@@ -157,70 +167,130 @@ export function WorkflowCanvas({ isNew = false }: WorkflowCanvasProps) {
 
       {/* Sidebar */}
       <div className="w-72 border border-border rounded-lg flex flex-col bg-card overflow-hidden">
-        {/* Node Library */}
-        <div className="flex-none p-4 border-b border-border">
-          <h3 className="font-semibold mb-4 text-foreground">Add Nodes</h3>
-          <div className="space-y-2">
-            <button
-              onClick={() => addNode('trigger')}
-              className="w-full p-3 bg-green-500/10 text-green-600 dark:text-green-400 text-sm font-medium rounded hover:bg-green-500/20 transition group relative"
-              title="Start point of workflow - e.g., New Email"
-            >
-              Trigger
-              <span className="absolute left-0 bottom-full mb-2 hidden group-hover:block bg-foreground text-background text-xs rounded p-2 whitespace-nowrap z-50">
-                Start point - e.g., New Email
-              </span>
-            </button>
-            <button
-              onClick={() => addNode('action')}
-              className="w-full p-3 bg-blue-500/10 text-blue-600 dark:text-blue-400 text-sm font-medium rounded hover:bg-blue-500/20 transition group relative"
-              title="Perform an action - e.g., Send Message"
-            >
-              Action
-              <span className="absolute left-0 bottom-full mb-2 hidden group-hover:block bg-foreground text-background text-xs rounded p-2 whitespace-nowrap z-50">
-                Perform action - e.g., Send Message
-              </span>
-            </button>
-            <button
-              onClick={() => addNode('condition')}
-              className="w-full p-3 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 text-sm font-medium rounded hover:bg-yellow-500/20 transition group relative"
-              title="Branch logic - true/false paths"
-            >
-              Condition
-              <span className="absolute left-0 bottom-full mb-2 hidden group-hover:block bg-foreground text-background text-xs rounded p-2 whitespace-nowrap z-50">
-                Branch logic - yes/no paths
-              </span>
-            </button>
-            <button
-              onClick={() => addNode('delay')}
-              className="w-full p-3 bg-purple-500/10 text-purple-600 dark:text-purple-400 text-sm font-medium rounded hover:bg-purple-500/20 transition group relative"
-              title="Wait before next action"
-            >
-              Delay
-              <span className="absolute left-0 bottom-full mb-2 hidden group-hover:block bg-foreground text-background text-xs rounded p-2 whitespace-nowrap z-50">
-                Wait time - e.g., 5 minutes
-              </span>
-            </button>
-            <button
-              onClick={() => addNode('webhook')}
-              className="w-full p-3 bg-green-600/10 text-emerald-600 dark:text-emerald-400 text-sm font-medium rounded hover:bg-green-600/20 transition group relative"
-              title="Receive external events"
-            >
-              Webhook
-              <span className="absolute left-0 bottom-full mb-2 hidden group-hover:block bg-foreground text-background text-xs rounded p-2 whitespace-nowrap z-50">
-                Receive events from apps
-              </span>
-            </button>
-            <button
-              onClick={() => addNode('apiRequest')}
-              className="w-full p-3 bg-orange-500/10 text-orange-600 dark:text-orange-400 text-sm font-medium rounded hover:bg-orange-500/20 transition group relative"
-              title="Make API calls"
-            >
-              API Request
-              <span className="absolute left-0 bottom-full mb-2 hidden group-hover:block bg-foreground text-background text-xs rounded p-2 whitespace-nowrap z-50">
-                Call external APIs
-              </span>
-            </button>
+        {/* Node Library - Categorized */}
+        <div className="flex-1 overflow-y-auto border-b border-border">
+          <div className="p-4 space-y-4">
+            <div>
+              <h3 className="font-bold text-foreground mb-3 text-sm uppercase tracking-wider">Basic</h3>
+              <div className="space-y-2">
+                <button
+                  onClick={() => addNode('trigger')}
+                  className="w-full p-3 bg-green-500/10 text-green-700 dark:text-green-400 text-sm font-medium rounded-lg hover:bg-green-500/20 transition text-left"
+                  title="Start your workflow"
+                >
+                  🚀 Trigger
+                </button>
+                <button
+                  onClick={() => addNode('action')}
+                  className="w-full p-3 bg-blue-500/10 text-blue-700 dark:text-blue-400 text-sm font-medium rounded-lg hover:bg-blue-500/20 transition text-left"
+                  title="Perform action on app"
+                >
+                  ⚡ Action
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-foreground mb-3 text-sm uppercase tracking-wider">Control Flow</h3>
+              <div className="space-y-2">
+                <button
+                  onClick={() => addNode('condition')}
+                  className="w-full p-3 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 text-sm font-medium rounded-lg hover:bg-yellow-500/20 transition text-left"
+                >
+                  ❓ Condition
+                </button>
+                <button
+                  onClick={() => addNode('if')}
+                  className="w-full p-3 bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 text-sm font-medium rounded-lg hover:bg-indigo-500/20 transition text-left"
+                >
+                  🔀 If Node
+                </button>
+                <button
+                  onClick={() => addNode('ifElse')}
+                  className="w-full p-3 bg-violet-500/10 text-violet-700 dark:text-violet-400 text-sm font-medium rounded-lg hover:bg-violet-500/20 transition text-left"
+                >
+                  🔄 If-Else
+                </button>
+                <button
+                  onClick={() => addNode('switch')}
+                  className="w-full p-3 bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 text-sm font-medium rounded-lg hover:bg-cyan-500/20 transition text-left"
+                >
+                  🎯 Switch
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-foreground mb-3 text-sm uppercase tracking-wider">Loops</h3>
+              <div className="space-y-2">
+                <button
+                  onClick={() => addNode('forLoop')}
+                  className="w-full p-3 bg-red-500/10 text-red-700 dark:text-red-400 text-sm font-medium rounded-lg hover:bg-red-500/20 transition text-left"
+                >
+                  🔁 For Loop
+                </button>
+                <button
+                  onClick={() => addNode('whileLoop')}
+                  className="w-full p-3 bg-rose-500/10 text-rose-700 dark:text-rose-400 text-sm font-medium rounded-lg hover:bg-rose-500/20 transition text-left"
+                >
+                  ⏱️ While Loop
+                </button>
+                <button
+                  onClick={() => addNode('delay')}
+                  className="w-full p-3 bg-purple-500/10 text-purple-700 dark:text-purple-400 text-sm font-medium rounded-lg hover:bg-purple-500/20 transition text-left"
+                >
+                  ⏸️ Delay
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-foreground mb-3 text-sm uppercase tracking-wider">Web Actions</h3>
+              <div className="space-y-2">
+                <button
+                  onClick={() => addNode('openBrowser')}
+                  className="w-full p-3 bg-sky-500/10 text-sky-700 dark:text-sky-400 text-sm font-medium rounded-lg hover:bg-sky-500/20 transition text-left"
+                >
+                  🌐 Open URL
+                </button>
+                <button
+                  onClick={() => addNode('fillInput')}
+                  className="w-full p-3 bg-lime-500/10 text-lime-700 dark:text-lime-400 text-sm font-medium rounded-lg hover:bg-lime-500/20 transition text-left"
+                >
+                  ✏️ Fill Input
+                </button>
+                <button
+                  onClick={() => addNode('clickElement')}
+                  className="w-full p-3 bg-teal-500/10 text-teal-700 dark:text-teal-400 text-sm font-medium rounded-lg hover:bg-teal-500/20 transition text-left"
+                >
+                  🖱️ Click Element
+                </button>
+                <button
+                  onClick={() => addNode('screenshot')}
+                  className="w-full p-3 bg-amber-500/10 text-amber-700 dark:text-amber-400 text-sm font-medium rounded-lg hover:bg-amber-500/20 transition text-left"
+                >
+                  📸 Screenshot
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-foreground mb-3 text-sm uppercase tracking-wider">Integration</h3>
+              <div className="space-y-2">
+                <button
+                  onClick={() => addNode('webhook')}
+                  className="w-full p-3 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-sm font-medium rounded-lg hover:bg-emerald-500/20 transition text-left"
+                >
+                  🔗 Webhook
+                </button>
+                <button
+                  onClick={() => addNode('apiRequest')}
+                  className="w-full p-3 bg-orange-500/10 text-orange-700 dark:text-orange-400 text-sm font-medium rounded-lg hover:bg-orange-500/20 transition text-left"
+                >
+                  🔌 API Request
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 

@@ -7,8 +7,14 @@ import { Button } from '@/components/ui/button'
 import { ChevronLeft, Save, Play, Settings, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 
-export default function WorkflowBuilderPage({ params }: { params: { id?: string } }) {
-  const workflowId = params?.id || ''
+export default async function WorkflowBuilderPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const workflowId = id || ''
+  
+  return <WorkflowBuilderContent workflowId={workflowId} />
+}
+
+function WorkflowBuilderContent({ workflowId }: { workflowId: string }) {
   const isNewWorkflow = workflowId?.includes('workflow-') || workflowId === 'new'
   const [workflowName, setWorkflowName] = useState('')
   const [workflowDescription, setWorkflowDescription] = useState('')
@@ -18,17 +24,27 @@ export default function WorkflowBuilderPage({ params }: { params: { id?: string 
 
   // Load workflow data from sessionStorage on mount
   React.useEffect(() => {
+    if (typeof window === 'undefined') return
+    
+    console.log('[v0] WorkflowBuilderContent mounted, workflowId:', workflowId, 'isNewWorkflow:', isNewWorkflow)
+    
     if (isNewWorkflow) {
       const savedData = sessionStorage.getItem('newWorkflowData')
+      console.log('[v0] Reading sessionStorage:', savedData)
       if (savedData) {
         try {
           const { name, description } = JSON.parse(savedData)
-          setWorkflowName(name || '')
+          console.log('[v0] Parsed data:', { name, description })
+          setWorkflowName(name || 'Untitled Workflow')
           setWorkflowDescription(description || '')
           sessionStorage.removeItem('newWorkflowData')
         } catch (e) {
           console.error('[v0] Failed to parse workflow data:', e)
+          setWorkflowName('Untitled Workflow')
         }
+      } else {
+        console.log('[v0] No saved data found, using defaults')
+        setWorkflowName('Untitled Workflow')
       }
     } else {
       // For existing workflows, set default values
