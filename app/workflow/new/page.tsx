@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useState } from 'react'
 import { ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
+import { toast } from 'sonner'
 
 export default function NewWorkflowPage() {
   const router = useRouter()
@@ -15,11 +16,13 @@ export default function NewWorkflowPage() {
 
   const handleCreate = () => {
     if (!workflowName.trim()) {
-      alert('Please enter a workflow name')
+      toast.error('Workflow name is required', {
+        description: 'Please enter a name for your workflow to continue.'
+      })
       return
     }
 
-    // Store the workflow data in sessionStorage to pass to the builder
+    // Store the workflow data in both sessionStorage and localStorage for persistence
     const workflowData = {
       name: workflowName.trim(),
       description: workflowDescription.trim(),
@@ -27,12 +30,18 @@ export default function NewWorkflowPage() {
     
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('newWorkflowData', JSON.stringify(workflowData))
-      console.log('[v0] Stored workflow data:', workflowData)
+      // Also store in localStorage with a workflow ID for persistence
+      const workflowId = `workflow-${Date.now()}`
+      localStorage.setItem(`workflow-${workflowId}`, JSON.stringify(workflowData))
+      console.log('✅ NewWorkflowForm: Workflow data stored with ID', { workflowId, name: workflowData.name })
     }
 
     // Redirect to the workflow builder with the new workflow ID
     const workflowId = `workflow-${Date.now()}`
-    console.log('[v0] Redirecting to workflow:', workflowId)
+    console.log('🚀 NewWorkflowForm: Redirecting to workflow builder', { workflowId, name: workflowName })
+    toast.success('Workflow created successfully', {
+      description: `Creating workflow: ${workflowName}`
+    })
     router.push(`/workflow/${workflowId}`)
   }
 

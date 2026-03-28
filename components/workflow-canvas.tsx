@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useState, useEffect } from 'react'
 import ReactFlow, {
   Node,
   Edge,
@@ -14,6 +14,9 @@ import ReactFlow, {
 import 'reactflow/dist/style.css'
 import { nodeTypes } from './workflow-nodes'
 import { ConfigPanel } from './config-panel'
+import { AddNodeModal } from './add-node-modal'
+import { Button } from '@/components/ui/button'
+import { Plus, Trash2 } from 'lucide-react'
 
 const initialNodes: Node[] = [
   {
@@ -52,6 +55,7 @@ export function WorkflowCanvas({ isNew = false }: WorkflowCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState(isNew ? emptyNodes : initialNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(isNew ? emptyEdges : initialEdges)
   const [selectedNode, setSelectedNode] = useState<Node | null>(null)
+  const [isAddNodeOpen, setIsAddNodeOpen] = useState(false)
 
   const onConnect = useCallback(
     (connection: Connection) => {
@@ -68,30 +72,38 @@ export function WorkflowCanvas({ isNew = false }: WorkflowCanvasProps) {
   )
 
   const handleNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
+    event.stopPropagation()
     setSelectedNode(node)
   }, [])
 
+  const handleCanvasClick = useCallback(() => {
+    setSelectedNode(null)
+  }, [])
+
+  const typeNames: { [key: string]: string } = {
+    trigger: 'Trigger',
+    action: 'Action',
+    condition: 'Condition',
+    delay: 'Delay',
+    webhook: 'Webhook',
+    apiRequest: 'API Request',
+    if: 'If',
+    else: 'Else',
+    ifElse: 'If-Else',
+    switch: 'Switch',
+    forLoop: 'For Loop',
+    whileLoop: 'While Loop',
+    openBrowser: 'Open URL',
+    fillInput: 'Fill Input',
+    clickElement: 'Click Element',
+    selectDropdown: 'Select Dropdown',
+    getText: 'Get Text',
+    checkExists: 'Check Exists',
+    screenshot: 'Screenshot',
+  }
+
   const addNode = (type: string) => {
-    // Generate unique label based on node type count
     const sameTypeNodes = nodes.filter((n) => n.type === type).length + 1
-    const typeNames: { [key: string]: string } = {
-      trigger: 'Trigger',
-      action: 'Action',
-      condition: 'Condition',
-      delay: 'Delay',
-      webhook: 'Webhook',
-      apiRequest: 'API Request',
-      if: 'If',
-      else: 'Else',
-      ifElse: 'If-Else',
-      switch: 'Switch',
-      forLoop: 'For Loop',
-      whileLoop: 'While Loop',
-      openBrowser: 'Open URL',
-      fillInput: 'Fill Input',
-      clickElement: 'Click Element',
-      screenshot: 'Screenshot',
-    }
     const baseLabel = typeNames[type] || type
     const label = `${baseLabel} ${sameTypeNodes}`
 
@@ -99,13 +111,12 @@ export function WorkflowCanvas({ isNew = false }: WorkflowCanvasProps) {
       id: `${type}-${Date.now()}`,
       type,
       position: {
-        x: Math.random() * 400 + 100,
-        y: Math.random() * 400 + 100,
+        x: 250 + Math.random() * 100,
+        y: 250 + Math.random() * 100,
       },
       data: { label, description: '' },
     }
     setNodes((nds) => [...nds, newNode])
-    // Auto-select the new node
     setSelectedNode(newNode)
   }
 
@@ -127,7 +138,6 @@ export function WorkflowCanvas({ isNew = false }: WorkflowCanvasProps) {
     }
   }
 
-  // Update nodes with delete handler when they change
   React.useEffect(() => {
     setNodes((nds) =>
       nds.map((n) => ({
@@ -137,165 +147,92 @@ export function WorkflowCanvas({ isNew = false }: WorkflowCanvasProps) {
     )
   }, [setNodes])
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd+K or Ctrl+K to open add node modal
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        setIsAddNodeOpen(true)
+      }
+      // Delete or Backspace to delete selected node
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedNode && e.target === document.body) {
+        e.preventDefault()
+        deleteSelectedNode()
+      }
+      // Escape to deselect
+      if (e.key === 'Escape') {
+        setSelectedNode(null)
+      }
+    }
+    
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [selectedNode])
+
   return (
-    <div className="flex w-full h-full gap-4 bg-background text-foreground p-4">
-      {/* Canvas */}
-      <div className="flex-1 border border-border rounded-lg overflow-hidden bg-gradient-to-br from-background to-muted/20 relative">
-        {nodes.length === 0 && (
-          <div className="absolute inset-0 flex items-center justify-center z-10">
-            <div className="text-center">
-              <div className="text-4xl mb-3 opacity-20">📋</div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">No nodes yet</h3>
-              <p className="text-sm text-muted-foreground">Add your first node from the panel to get started</p>
-            </div>
-          </div>
-        )}
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onNodeClick={handleNodeClick}
-          nodeTypes={nodeTypes}
-          fitView
-        >
-          <Background />
-          <Controls />
-        </ReactFlow>
-      </div>
-
-      {/* Sidebar */}
-      <div className="w-72 border border-border rounded-lg flex flex-col bg-card overflow-hidden">
-        {/* Node Library - Categorized */}
-        <div className="flex-1 overflow-y-auto border-b border-border">
-          <div className="p-4 space-y-4">
-            <div>
-              <h3 className="font-bold text-foreground mb-3 text-sm uppercase tracking-wider text-xs">Basic</h3>
-              <div className="space-y-2">
-                <button
-                  onClick={() => addNode('trigger')}
-                  className="w-full p-3 bg-gradient-to-r from-green-500/20 to-green-600/10 text-green-700 dark:from-green-600/20 dark:to-green-700/10 dark:text-green-300 text-sm font-semibold rounded-lg hover:from-green-600 hover:to-green-700 hover:text-white hover:shadow-lg transition-all duration-200 text-left border border-green-500/30 hover:border-green-500/60 cursor-pointer"
-                  title="Start your workflow"
-                >
-                  🚀 Trigger
-                </button>
-                <button
-                  onClick={() => addNode('action')}
-                  className="w-full p-3 bg-gradient-to-r from-blue-500/20 to-blue-600/10 text-blue-700 dark:from-blue-600/20 dark:to-blue-700/10 dark:text-blue-300 text-sm font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 hover:text-white hover:shadow-lg transition-all duration-200 text-left border border-blue-500/30 hover:border-blue-500/60 cursor-pointer"
-                  title="Perform action on app"
-                >
-                  ⚡ Action
-                </button>
+    <div className="flex w-full h-full gap-5 bg-background text-foreground p-5 relative">
+      {/* Canvas - Primary Focus */}
+      <div className="flex-1 relative">
+        <div className="absolute inset-0 border border-border/60 rounded-xl overflow-hidden bg-gradient-to-br from-background/80 via-muted/10 to-background shadow-sm hover:shadow-md transition-shadow duration-300 z-0">
+          {nodes.length === 0 && (
+            <div className="absolute inset-0 flex items-center justify-center z-10 bg-gradient-to-br from-background/40 to-muted/20 backdrop-blur-sm">
+              <div className="text-center space-y-4">
+                <div className="text-6xl opacity-30 animate-bounce">📋</div>
+                <div>
+                  <h3 className="text-xl font-bold text-foreground mb-2">Ready to build?</h3>
+                  <p className="text-sm text-muted-foreground/80 max-w-xs">Click the <span className="font-semibold text-primary">➕ Add Node</span> button or press <span className="font-semibold">Cmd+K</span> to start</p>
+                </div>
+                <div className="pt-2 text-xs text-muted-foreground/60">💡 Connect nodes to create your automation flow</div>
               </div>
             </div>
-
-            <div>
-              <h3 className="font-bold text-foreground mb-3 text-xs uppercase tracking-wider">Control Flow</h3>
-              <div className="space-y-2">
-                <button
-                  onClick={() => addNode('condition')}
-                  className="w-full p-3 bg-gradient-to-r from-yellow-500/20 to-yellow-600/10 text-yellow-700 dark:from-yellow-600/20 dark:to-yellow-700/10 dark:text-yellow-300 text-sm font-semibold rounded-lg hover:from-yellow-600 hover:to-yellow-700 hover:text-white hover:shadow-lg transition-all duration-200 text-left border border-yellow-500/30 hover:border-yellow-500/60 cursor-pointer"
-                >
-                  ❓ Condition
-                </button>
-                <button
-                  onClick={() => addNode('if')}
-                  className="w-full p-3 bg-gradient-to-r from-indigo-500/20 to-indigo-600/10 text-indigo-700 dark:from-indigo-600/20 dark:to-indigo-700/10 dark:text-indigo-300 text-sm font-semibold rounded-lg hover:from-indigo-600 hover:to-indigo-700 hover:text-white hover:shadow-lg transition-all duration-200 text-left border border-indigo-500/30 hover:border-indigo-500/60 cursor-pointer"
-                >
-                  🔀 If Node
-                </button>
-                <button
-                  onClick={() => addNode('ifElse')}
-                  className="w-full p-3 bg-gradient-to-r from-violet-500/20 to-violet-600/10 text-violet-700 dark:from-violet-600/20 dark:to-violet-700/10 dark:text-violet-300 text-sm font-semibold rounded-lg hover:from-violet-600 hover:to-violet-700 hover:text-white hover:shadow-lg transition-all duration-200 text-left border border-violet-500/30 hover:border-violet-500/60 cursor-pointer"
-                >
-                  🔄 If-Else
-                </button>
-                <button
-                  onClick={() => addNode('switch')}
-                  className="w-full p-3 bg-gradient-to-r from-cyan-500/20 to-cyan-600/10 text-cyan-700 dark:from-cyan-600/20 dark:to-cyan-700/10 dark:text-cyan-300 text-sm font-semibold rounded-lg hover:from-cyan-600 hover:to-cyan-700 hover:text-white hover:shadow-lg transition-all duration-200 text-left border border-cyan-500/30 hover:border-cyan-500/60 cursor-pointer"
-                >
-                  🎯 Switch
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="font-bold text-foreground mb-3 text-xs uppercase tracking-wider">Loops</h3>
-              <div className="space-y-2">
-                <button
-                  onClick={() => addNode('forLoop')}
-                  className="w-full p-3 bg-gradient-to-r from-red-500/20 to-red-600/10 text-red-700 dark:from-red-600/20 dark:to-red-700/10 dark:text-red-300 text-sm font-semibold rounded-lg hover:from-red-600 hover:to-red-700 hover:text-white hover:shadow-lg transition-all duration-200 text-left border border-red-500/30 hover:border-red-500/60 cursor-pointer"
-                >
-                  🔁 For Loop
-                </button>
-                <button
-                  onClick={() => addNode('whileLoop')}
-                  className="w-full p-3 bg-gradient-to-r from-rose-500/20 to-rose-600/10 text-rose-700 dark:from-rose-600/20 dark:to-rose-700/10 dark:text-rose-300 text-sm font-semibold rounded-lg hover:from-rose-600 hover:to-rose-700 hover:text-white hover:shadow-lg transition-all duration-200 text-left border border-rose-500/30 hover:border-rose-500/60 cursor-pointer"
-                >
-                  ⏱️ While Loop
-                </button>
-                <button
-                  onClick={() => addNode('delay')}
-                  className="w-full p-3 bg-gradient-to-r from-purple-500/20 to-purple-600/10 text-purple-700 dark:from-purple-600/20 dark:to-purple-700/10 dark:text-purple-300 text-sm font-semibold rounded-lg hover:from-purple-600 hover:to-purple-700 hover:text-white hover:shadow-lg transition-all duration-200 text-left border border-purple-500/30 hover:border-purple-500/60 cursor-pointer"
-                >
-                  ⏸️ Delay
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="font-bold text-foreground mb-3 text-sm uppercase tracking-wider">Web Actions</h3>
-              <div className="space-y-2">
-                <button
-                  onClick={() => addNode('openBrowser')}
-                  className="w-full p-3 bg-sky-500/10 text-sky-700 dark:text-sky-400 text-sm font-medium rounded-lg hover:bg-sky-500/20 transition text-left"
-                >
-                  🌐 Open URL
-                </button>
-                <button
-                  onClick={() => addNode('fillInput')}
-                  className="w-full p-3 bg-lime-500/10 text-lime-700 dark:text-lime-400 text-sm font-medium rounded-lg hover:bg-lime-500/20 transition text-left"
-                >
-                  ✏️ Fill Input
-                </button>
-                <button
-                  onClick={() => addNode('clickElement')}
-                  className="w-full p-3 bg-teal-500/10 text-teal-700 dark:text-teal-400 text-sm font-medium rounded-lg hover:bg-teal-500/20 transition text-left"
-                >
-                  🖱️ Click Element
-                </button>
-                <button
-                  onClick={() => addNode('screenshot')}
-                  className="w-full p-3 bg-amber-500/10 text-amber-700 dark:text-amber-400 text-sm font-medium rounded-lg hover:bg-amber-500/20 transition text-left"
-                >
-                  📸 Screenshot
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="font-bold text-foreground mb-3 text-sm uppercase tracking-wider">Integration</h3>
-              <div className="space-y-2">
-                <button
-                  onClick={() => addNode('webhook')}
-                  className="w-full p-3 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-sm font-medium rounded-lg hover:bg-emerald-500/20 transition text-left"
-                >
-                  🔗 Webhook
-                </button>
-                <button
-                  onClick={() => addNode('apiRequest')}
-                  className="w-full p-3 bg-orange-500/10 text-orange-700 dark:text-orange-400 text-sm font-medium rounded-lg hover:bg-orange-500/20 transition text-left"
-                >
-                  🔌 API Request
-                </button>
-              </div>
-            </div>
-          </div>
+          )}
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            onNodeClick={handleNodeClick}
+            nodeTypes={nodeTypes}
+            fitView
+          >
+            <Background />
+            <Controls />
+          </ReactFlow>
         </div>
 
-        {/* Config Panel */}
-        <div className="flex-1 overflow-y-auto bg-card">
+        {/* Floating Add Node Button */}
+        <button
+          onClick={() => setIsAddNodeOpen(true)}
+          className="absolute bottom-6 right-6 z-20 flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200"
+          title="Add node (Cmd+K)"
+        >
+          <Plus className="h-5 w-5" />
+          <span className="hidden sm:inline">Add Node</span>
+        </button>
+      </div>
+
+      {/* Sidebar - Config Only */}
+      <div className="w-80 border border-border/60 rounded-xl flex flex-col bg-card shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
+        {/* Header */}
+        <div className="px-5 py-4 border-b border-border/50 bg-muted/20 flex items-center justify-between">
+          <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
+            {selectedNode ? '⚙️ Node Settings' : '← Select Node'}
+          </h3>
+          {selectedNode && (
+            <button
+              onClick={deleteSelectedNode}
+              className="p-1.5 hover:bg-destructive/20 text-destructive rounded transition-colors"
+              title="Delete node (Delete)"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto bg-card/50">
           {selectedNode ? (
             <ConfigPanel
               node={selectedNode}
@@ -307,12 +244,23 @@ export function WorkflowCanvas({ isNew = false }: WorkflowCanvasProps) {
               }}
             />
           ) : (
-            <div className="p-4 text-sm text-muted-foreground">
-              Select a node to configure it
+            <div className="p-5 text-sm text-muted-foreground text-center space-y-3 h-full flex flex-col items-center justify-center">
+              <div className="text-4xl">👇</div>
+              <div>
+                <p className="font-semibold text-foreground mb-1">No node selected</p>
+                <p className="text-xs opacity-70 leading-relaxed">Click on a node in the canvas or add a new one using the <span className="font-semibold">➕ Add Node</span> button to start configuring</p>
+              </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* Add Node Modal */}
+      <AddNodeModal
+        isOpen={isAddNodeOpen}
+        onClose={() => setIsAddNodeOpen(false)}
+        onNodeSelect={addNode}
+      />
     </div>
   )
 }

@@ -24,38 +24,183 @@ A modern, full-featured workflow automation platform built with Next.js 15, Reac
 ## Project Structure
 
 ```
-/vercel/share/v0-project/
-├── app/
-│   ├── layout.tsx                 # Root layout with theme provider
-│   ├── globals.css                # Design tokens and base styles
-│   ├── page.tsx                   # Landing page
+Autoflow/
+├── app/                                    # Next.js app directory
+│   ├── layout.tsx                          # Root layout with theme provider
+│   ├── page.tsx                            # Landing page
+│   ├── globals.css                         # Design tokens and base styles
+│   ├── builder/
+│   │   ├── page.tsx                        # Main workflow builder screen
+│   │   └── loading.tsx                     # Loading skeleton
+│   ├── projects/
+│   │   ├── page.tsx                        # Project list
+│   │   └── [projectId]/
+│   │       └── page.tsx                    # Project dashboard
 │   ├── dashboard/
-│   │   ├── layout.tsx             # Dashboard layout with sidebar
-│   │   ├── page.tsx               # Workflows overview
-│   │   ├── executions/page.tsx    # Execution logs viewer
-│   │   ├── integrations/page.tsx  # Integration marketplace
-│   │   ├── templates/page.tsx     # Template gallery
-│   │   ├── api-keys/page.tsx      # API key management
-│   │   └── settings/page.tsx      # User settings
+│   │   ├── layout.tsx                      # Dashboard layout with sidebar
+│   │   ├── page.tsx                        # Workflows overview
+│   │   ├── executions/page.tsx             # Execution logs viewer (INTERACTIVE)
+│   │   ├── integrations/page.tsx           # Integration marketplace
+│   │   ├── templates/page.tsx              # Template gallery
+│   │   ├── api-keys/page.tsx               # API key management
+│   │   └── settings/page.tsx               # User settings & permissions
 │   └── workflow/
-│       └── [id]/page.tsx          # Workflow builder canvas
-├── components/
-│   ├── ui/                        # 50+ shadcn/ui components
-│   ├── sidebar.tsx                # Navigation sidebar
-│   ├── theme-toggle.tsx           # Dark/light mode toggle
-│   ├── stat-card.tsx              # Dashboard stat cards
-│   ├── workflow-card.tsx          # Workflow list items
-│   ├── execution-table.tsx        # Execution logs table
-│   ├── workflow-canvas.tsx        # React Flow canvas
-│   ├── workflow-nodes.tsx         # Custom node components
-│   └── config-panel.tsx           # Node configuration panel
-├── lib/
-│   ├── types.ts                   # TypeScript interfaces
-│   ├── mock-data.ts               # Mock data for all features
-│   └── utils.ts                   # Utility functions
-├── package.json                   # Dependencies
-├── tailwind.config.ts             # Tailwind configuration
-└── tsconfig.json                  # TypeScript configuration
+│       ├── [id]/page.tsx                   # Workflow builder canvas
+│       └── new/page.tsx                    # New workflow creation
+│
+├── features/                               # 🔥 CORE ARCHITECTURE - Feature-specific logic
+│   │
+│   ├── nodes/                              # Everything about nodes (reusable)
+│   │   ├── components/
+│   │   │   ├── NodeCard.tsx                # Visual node representation
+│   │   │   ├── NodeEditor.tsx              # Node configuration editor
+│   │   │   └── NodeToolbar.tsx             # Node action toolbar
+│   │   ├── config/
+│   │   │   └── index.ts                    # Node type definitions (CRITICAL)
+│   │   ├── hooks/
+│   │   │   ├── useNode.ts                  # Node state management
+│   │   │   └── useNodeValidation.ts        # Node validation logic
+│   │   ├── utils/
+│   │   │   └── nodeHelpers.ts              # Node utility functions
+│   │   └── types.ts                        # Node typescript types
+│   │
+│   ├── workflow/                           # Canvas + workflow logic
+│   │   ├── components/
+│   │   │   ├── Canvas.tsx                  # React Flow canvas wrapper
+│   │   │   ├── Edge.tsx                    # Custom edge rendering
+│   │   │   ├── WorkflowToolbar.tsx         # Workflow controls toolbar
+│   │   │   ├── DashboardContent.tsx        # Dashboard with stats + workflows
+│   │   │   └── WorkflowCardExpandable.tsx  # Interactive workflow card
+│   │   ├── hooks/
+│   │   │   ├── useWorkflow.ts              # Workflow state management
+│   │   │   └── useConnections.ts           # Connection logic
+│   │   ├── store.ts                        # Zustand/Redux for builder state
+│   │   ├── utils/
+│   │   │   ├── layout.ts                   # Auto-layout algorithms
+│   │   │   └── validation.ts               # Workflow validation
+│   │   └── types.ts                        # Workflow types
+│   │
+│   ├── execution/                          # Running workflows + status
+│   │   ├── components/
+│   │   │   ├── ExecutionRowExpandable.tsx  # Expandable execution row (INTERACTIVE)
+│   │   │   ├── ExecutionsGrid.tsx          # Executions table with filters
+│   │   │   ├── StatusBadge.tsx             # Status indicator component
+│   │   │   └── RunButton.tsx               # Action button with loading
+│   │   ├── hooks/
+│   │   │   └── useExecution.ts             # Execution state & polling
+│   │   ├── services.ts                     # API to trigger execution
+│   │   └── types.ts                        # Execution types
+│   │
+│   ├── logs/                               # Logs + debugging
+│   │   ├── components/
+│   │   │   ├── LogsPanel.tsx               # Real-time logs viewer
+│   │   │   └── LogItem.tsx                 # Individual log entry
+│   │   ├── hooks/
+│   │   │   └── useLogs.ts                  # Log streaming & filtering
+│   │   └── types.ts                        # Log types
+│   │
+│   ├── integrations/                       # Integration management (INTERACTIVE)
+│   │   ├── components/
+│   │   │   ├── IntegrationCard.tsx         # Integration card with auth modal
+│   │   │   ├── IntegrationsGrid.tsx        # Marketplace grid with search
+│   │   │   └── AuthFlow.tsx                # OAuth authentication flow
+│   │   ├── services.ts                     # Integration APIs
+│   │   └── types.ts                        # Integration types
+│   │
+│   ├── templates/                          # Template system
+│   │   ├── components/
+│   │   │   ├── TemplateCard.tsx            # Template card with preview
+│   │   │   ├── TemplatesGrid.tsx           # Template gallery with filters
+│   │   │   └── CategoryFilter.tsx          # Category filtering
+│   │   ├── services.ts                     # Template APIs
+│   │   └── types.ts                        # Template types
+│   │
+│   ├── settings/                           # User settings + API keys
+│   │   ├── components/
+│   │   │   ├── SettingsPageContent.tsx     # Settings with tabs
+│   │   │   ├── ApiKeyCard.tsx              # API key with hide/show
+│   │   │   └── ApiKeysGrid.tsx             # API keys management
+│   │   ├── services.ts                     # Settings/API key APIs
+│   │   └── types.ts                        # Settings types
+│   │
+│   ├── projects/                           # Project management
+│   │   ├── components/
+│   │   │   ├── ProjectCard.tsx             # Project list item
+│   │   │   └── ProjectForm.tsx             # Create/edit project
+│   │   ├── services.ts                     # Project APIs
+│   │   └── types.ts                        # Project types
+│   │
+│   ├── hooks.ts                            # Shared feature hooks
+│   ├── types.ts                            # Shared feature types
+│   ├── utils.ts                            # Shared feature utilities
+│   └── auth/                               # Authentication logic
+│
+├── components/                             # PURE reusable UI only
+│   ├── ui/                                 # Base UI components with states
+│   │   ├── empty-state.tsx                 # Empty state component (NEW)
+│   │   ├── loading-skeleton.tsx            # Loading skeleton (NEW)
+│   │   ├── status-badge.tsx                # Status indicator (ENHANCED)
+│   │   ├── stat-card-enhanced.tsx          # Stat card with glow (NEW)
+│   │   ├── action-button.tsx               # Button with loading/success (NEW)
+│   │   ├── filter-chips.tsx                # Filter chip selector (NEW)
+│   │   ├── animated-glow.tsx               # Glow effect wrapper (NEW)
+│   │   ├── button.tsx                      # Base button
+│   │   ├── input.tsx                       # Base input
+│   │   ├── card.tsx                        # Base card
+│   │   ├── dialog.tsx                      # Modal dialog
+│   │   ├── alert-dialog.tsx                # Confirmation dialog
+│   │   ├── tabs.tsx                        # Tab component
+│   │   ├── badge.tsx                       # Badge component
+│   │   ├── label.tsx                       # Form label
+│   │   └── ... (30+ other shadcn components)
+│   │
+│   ├── layout/
+│   │   ├── Navbar.tsx                      # Top navigation
+│   │   ├── Sidebar.tsx                     # Navigation sidebar with active highlight
+│   │   └── DashboardLayout.tsx             # Dashboard layout wrapper
+│   │
+│   └── shared/                             # Cross-cutting UI components
+│       ├── ThemeProvider.tsx               # Theme context & provider
+│       ├── ThemeToggle.tsx                 # Dark/light mode toggle
+│       └── Toast.tsx                       # Toast notification system
+│
+├── lib/                                    # Shared utilities & config
+│   ├── axios.ts                            # HTTP client setup
+│   ├── constants.ts                        # Global constants
+│   ├── types.ts                            # Global type definitions
+│   ├── utils.ts                            # Global utility functions
+│   └── mock-data.ts                        # Mock data for development
+│
+├── store/                                  # GLOBAL state (Zustand/Redux)
+│   ├── authStore.ts                        # Auth state
+│   ├── appStore.ts                         # App-wide state
+│   └── workflowStore.ts                    # Builder canvas state
+│
+├── styles/
+│   ├── globals.css                         # Global styles
+│   ├── animations.css                      # Animation definitions (NEW)
+│   └── theme.css                           # CSS variables for theming
+│
+├── hooks/                                  # App-wide custom hooks
+│   ├── use-toast.ts                        # Toast notification hook
+│   ├── use-mobile.ts                       # Mobile detection hook
+│   └── use-theme.ts                        # Theme hook
+│
+├── types/
+│   └── index.ts                            # Global type exports
+│
+├── assets/
+│   ├── icons/                              # SVG icons
+│   └── images/                             # Raster images
+│
+├── public/                                 # Static files
+│   └── icons/                              # Icon assets
+│
+├── package.json                            # Dependencies
+├── tailwind.config.ts                      # Tailwind configuration
+├── tsconfig.json                           # TypeScript configuration
+├── next.config.mjs                         # Next.js configuration
+└── README.md                               # Project documentation
 ```
 
 ## Design System

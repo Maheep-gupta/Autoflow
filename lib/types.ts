@@ -1,6 +1,6 @@
 export type WorkflowStatus = 'active' | 'inactive' | 'draft'
 export type ExecutionStatus = 'success' | 'failed' | 'running' | 'pending'
-export type NodeType = 'trigger' | 'action' | 'condition' | 'delay' | 'webhook' | 'apiRequest'
+export type NodeType = 'trigger' | 'action' | 'condition' | 'delay' | 'webhook' | 'apiRequest' | 'if' | 'else' | 'ifElse' | 'switch' | 'forLoop' | 'whileLoop' | 'openBrowser' | 'fillInput' | 'clickElement' | 'selectDropdown' | 'getText' | 'checkExists' | 'screenshot'
 
 export interface Workflow {
   id: string
