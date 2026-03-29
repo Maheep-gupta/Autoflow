@@ -7,11 +7,17 @@ import { ChevronLeft, CheckCircle, X, Zap, Edit2, Save } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
+import generateWorkflowJSON from '@/lib/generate-workflow-json'
+import { useNodesState, useEdgesState, ReactFlowProvider } from 'reactflow'
 
 export default function WorkflowBuilderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const workflowId = id || ''
-  return <WorkflowBuilderContent workflowId={workflowId} />
+  return (
+    <ReactFlowProvider>
+      <WorkflowBuilderContent workflowId={workflowId} />
+    </ReactFlowProvider>
+  )
 }
 
 function WorkflowBuilderContent({ workflowId }: { workflowId: string }) {
@@ -22,6 +28,10 @@ function WorkflowBuilderContent({ workflowId }: { workflowId: string }) {
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
   const [isPublishing, setIsPublishing] = useState(false)
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  
+  // Nodes and edges state
+  const [nodes, setNodes, onNodesChange] = useNodesState([])
+  const [edges, setEdges, onEdgesChange] = useEdgesState([])
 
   // Auto-save on workflow changes (name changes, node changes, etc.)
   useEffect(() => {
@@ -72,6 +82,40 @@ function WorkflowBuilderContent({ workflowId }: { workflowId: string }) {
 
   const handleNameCancel = () => {
     setIsEditing(false)
+  }
+
+  const handleTest = () => {
+    if (!nodes || nodes.length === 0) {
+      toast.error('No nodes to execute', {
+        duration: 3000,
+        dismissible: true,
+      })
+      return
+    }
+
+    try {
+      const typedNodes = nodes.map(n => ({
+        ...n,
+        type: n.type || 'action'
+      }))
+      const workflowJSON = generateWorkflowJSON(typedNodes, edges)
+      
+      // Update workflow name in the output
+      workflowJSON.workflowName = workflowName
+
+      console.log(JSON.stringify(workflowJSON, null, 2))
+
+      toast.success('Workflow executed successfully', {
+        duration: 3000,
+        dismissible: true,
+      })
+    } catch (error) {
+      console.error('Error:', error)
+      toast.error('Failed to execute workflow', {
+        duration: 3000,
+        dismissible: true,
+      })
+    }
   }
 
   const handlePublish = async () => {
@@ -160,6 +204,7 @@ function WorkflowBuilderContent({ workflowId }: { workflowId: string }) {
         {/* Top Right Actions */}
         <div className="flex items-center gap-2 ml-6">
           <Button
+            onClick={handleTest}
             variant="outline"
             className="gap-2 text-foreground border-border/50 hover:bg-accent/20 font-medium text-sm"
             disabled={isPublishing}
@@ -180,7 +225,16 @@ function WorkflowBuilderContent({ workflowId }: { workflowId: string }) {
 
       {/* Canvas */}
       <div className="flex-1 overflow-hidden">
-        <WorkflowCanvas isNew={isNewWorkflow} workflowName={workflowName} />
+        <WorkflowCanvas 
+          isNew={isNewWorkflow} 
+          workflowName={workflowName}
+          nodes={nodes}
+          setNodes={setNodes}
+          onNodesChange={onNodesChange}
+          edges={edges}
+          setEdges={setEdges}
+          onEdgesChange={onEdgesChange}
+        />
       </div>
     </div>
   )

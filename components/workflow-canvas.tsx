@@ -26,6 +26,12 @@ const initialEdges: Edge[] = []
 interface WorkflowCanvasProps {
   isNew?: boolean
   workflowName?: string
+  nodes?: any[]
+  setNodes?: any
+  onNodesChange?: any
+  edges?: any[]
+  setEdges?: any
+  onEdgesChange?: any
 }
 
 // Node categories for the left sidebar
@@ -78,12 +84,31 @@ const typeNames: { [key: string]: string } = {
   screenshot: 'Screenshot',
 }
 
-export function WorkflowCanvas({ isNew = false, workflowName = 'Untitled Workflow' }: WorkflowCanvasProps) {
+export function WorkflowCanvas({ 
+  isNew = false, 
+  workflowName = 'Untitled Workflow',
+  nodes: propsNodes,
+  setNodes: propsSetNodes,
+  onNodesChange: propsOnNodesChange,
+  edges: propsEdges,
+  setEdges: propsSetEdges,
+  onEdgesChange: propsOnEdgesChange,
+}: WorkflowCanvasProps) {
   const emptyNodes: Node[] = []
   const emptyEdges: Edge[] = []
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(isNew ? emptyNodes : initialNodes)
-  const [edges, setEdges, onEdgesChange] = useEdgesState(isNew ? emptyEdges : initialEdges)
+  // Use parent state if provided, otherwise manage own state
+  const [internalNodes, internalSetNodes, internalOnNodesChange] = useNodesState(isNew ? emptyNodes : initialNodes)
+  const [internalEdges, internalSetEdges, internalOnEdgesChange] = useEdgesState(isNew ? emptyEdges : initialEdges)
+
+  // Determine which state to use
+  const nodes = propsNodes ?? internalNodes
+  const setNodes = propsSetNodes ?? internalSetNodes
+  const onNodesChange = propsOnNodesChange ?? internalOnNodesChange
+  const edges = propsEdges ?? internalEdges
+  const setEdges = propsSetEdges ?? internalSetEdges
+  const onEdgesChange = propsOnEdgesChange ?? internalOnEdgesChange
+
   const [selectedNode, setSelectedNode] = useState<Node | null>(null)
   const [isAddNodeOpen, setIsAddNodeOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
@@ -126,24 +151,24 @@ const getSmartPosition = (
 
   // Delete node and clean up edges
   const deleteNode = useCallback((nodeId: string) => {
-  setEdges((eds) => {
+  setEdges((eds: Edge[]) => {
     const getDescendants = (id: string): string[] => {
       const children = eds
-        .filter(e => e.source === id)
-        .map(e => e.target)
+        .filter((e: Edge) => e.source === id)
+        .map((e: Edge) => e.target)
 
-      return children.flatMap(child => [child, ...getDescendants(child)])
+      return children.flatMap((child: string) => [child, ...getDescendants(child)])
     }
 
     const descendants = getDescendants(nodeId)
     const idsToDelete = new Set([nodeId, ...descendants])
 
     // remove nodes
-    setNodes((nds) => nds.filter(n => !idsToDelete.has(n.id)))
+    setNodes((nds: Node[]) => nds.filter((n: Node) => !idsToDelete.has(n.id)))
 
     // remove edges
     return eds.filter(
-      e => !idsToDelete.has(e.source) && !idsToDelete.has(e.target)
+      (e: Edge) => !idsToDelete.has(e.source) && !idsToDelete.has(e.target)
     )
   })
 
@@ -152,8 +177,8 @@ const getSmartPosition = (
 
   // Add node with auto-positioning and validation
 const addNode = useCallback((type: string) => {
-  setNodes((nds) => {
-    const hasTrigger = nds.some((n) => n.type === 'trigger')
+  setNodes((nds: Node[]) => {
+    const hasTrigger = nds.some((n: Node) => n.type === 'trigger')
 
     if (type !== 'trigger' && !hasTrigger) {
       toast.error('Add a trigger first')
@@ -165,12 +190,12 @@ const addNode = useCallback((type: string) => {
       return nds
     }
 
-    const sameTypeNodes = nds.filter((n) => n.type === type).length + 1
+    const sameTypeNodes = nds.filter((n: Node) => n.type === type).length + 1
     const label = `${typeNames[type] || type} ${sameTypeNodes}`
 
     const referenceNode =
       selectedNode
-        ? nds.find((n) => n.id === selectedNode.id)
+        ? nds.find((n: Node) => n.id === selectedNode.id)
         : nds[nds.length - 1]
 
     const children = edges.filter(e => e.source === referenceNode?.id)
@@ -190,7 +215,7 @@ const addNode = useCallback((type: string) => {
     // ✅ collision avoidance
     while (
       nds.some(
-        (n) =>
+        (n: Node) =>
           Math.abs(n.position.x - x) < 120 &&
           Math.abs(n.position.y - y) < 100
       )
@@ -207,9 +232,9 @@ const addNode = useCallback((type: string) => {
 
     // ✅ add edge safely
     if (referenceNode) {
-      setEdges((eds) => {
+      setEdges((eds: Edge[]) => {
         const exists = eds.some(
-          (e) =>
+          (e: Edge) =>
             e.source === referenceNode.id &&
             e.target === newNode.id
         )
@@ -236,9 +261,9 @@ const addNode = useCallback((type: string) => {
 }, [selectedNode, edges, setNodes, setEdges, deleteNode])
 
 const onConnect = useCallback((connection: Connection) => {
-  setEdges((eds) => {
+  setEdges((eds: Edge[]) => {
     const exists = eds.some(
-      (e) =>
+      (e: Edge) =>
         e.source === connection.source &&
         e.target === connection.target
     )
@@ -456,9 +481,9 @@ const onConnect = useCallback((connection: Connection) => {
             <ConfigPanel
               node={selectedNode}
               onDelete={deleteSelectedNode}
-              onChange={(updatedNode) => {
-                setNodes((nds) =>
-                  nds.map((n) => (n.id === updatedNode.id ? updatedNode : n))
+              onChange={(updatedNode: Node) => {
+                setNodes((nds: Node[]) =>
+                  nds.map((n: Node) => (n.id === updatedNode.id ? updatedNode : n))
                 )
               }}
             />
