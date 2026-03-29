@@ -77,7 +77,7 @@ export function FeaturesSection() {
                 </div>
 
                 {/* Content */}
-                <h3 className="text-xl font-bold mb-3 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-400 group-hover:to-cyan-400 group-hover:bg-clip-text transition-all">
+                <h3 className="text-xl font-bold mb-3 group-hover:text-transparent group-hover:from-blue-400 group-hover:to-cyan-400 group-hover:bg-clip-text transition-all">
                   {feature.title}
                 </h3>
                 <p className="text-white/60 leading-relaxed">{feature.description}</p>

@@ -32,7 +32,7 @@ const footerLinks = {
 
 export function Footer() {
   return (
-    <footer className="border-t border-white/10 bg-white/[0.02] backdrop-blur-sm py-16 px-6 relative overflow-hidden">
+    <footer className="border-t border-white/10  backdrop-blur-sm py-16 px-6 relative overflow-hidden">
       <div className="absolute inset-0 -z-10">
         <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl transform -translate-x-1/2" />
       </div>

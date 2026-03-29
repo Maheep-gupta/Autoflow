@@ -58,7 +58,7 @@ export function IntegrationsSection() {
             return (
               <div
                 key={index}
-                className="group relative rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-8 hover:border-blue-500/30 transition-all duration-300 overflow-hidden"
+                className="group relative rounded-2xl border border-white/10  backdrop-blur-xl p-8 hover:border-blue-500/30 transition-all duration-300 overflow-hidden"
               >
                 {/* Background glow */}
                 <div className="absolute -inset-1 rounded-2xl bg-linear-to-r from-blue-500/20 to-cyan-500/20 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-300 -z-10" />
@@ -67,7 +67,7 @@ export function IntegrationsSection() {
                 <div className="flex items-center justify-between mb-6">
                   {/* From */}
                   <div className="flex flex-col items-center flex-1">
-                    <div className={`p-4 rounded-xl bg-gradient-to-br ${integration.from.color} mb-3 shadow-lg`}>
+                    <div className={`p-4 rounded-xl  ${integration.from.color} mb-3 shadow-lg`}>
                       <FromIcon className="h-6 w-6 text-white" />
                     </div>
                     <p className="text-sm font-semibold text-white/70">{integration.from.label}</p>
@@ -82,7 +82,7 @@ export function IntegrationsSection() {
 
                   {/* To */}
                   <div className="flex flex-col items-center flex-1">
-                    <div className={`p-4 rounded-xl bg-gradient-to-br ${integration.to.color} mb-3 shadow-lg`}>
+                    <div className={`p-4 rounded-xl  ${integration.to.color} mb-3 shadow-lg`}>
                       <ToIcon className="h-6 w-6 text-white" />
                     </div>
                     <p className="text-sm font-semibold text-white/70">{integration.to.label}</p>

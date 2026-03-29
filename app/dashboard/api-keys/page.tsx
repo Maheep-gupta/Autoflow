@@ -186,7 +186,7 @@ export default function ApiKeysPage() {
         )}
 
         {/* Code Example */}
-        <div className="bg-gradient-to-br from-card to-card/60 border border-border/50 rounded-lg p-6 backdrop-blur">
+        <div className="from-card to-card/60 border border-border/50 rounded-lg p-6 backdrop-blur">
           <h3 className="font-semibold text-lg mb-4">Example Usage</h3>
           <div className="bg-background/50 border border-border/30 rounded p-4 overflow-x-auto">
             <pre className="text-xs md:text-sm text-foreground font-mono space-y-2">

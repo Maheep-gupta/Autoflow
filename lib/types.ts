@@ -29,9 +29,10 @@ export interface Integration {
   id: string
   name: string
   description: string
-  icon: string
   category: string
+  icon?: string
   connected?: boolean
+  workflows?: number
 }
 
 export interface WorkflowTemplate {
