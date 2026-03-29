@@ -91,7 +91,7 @@ export default function LoginPage() {
 
       {/* Right Side - Hero */}
       <div className="hidden md:flex items-center justify-center p-12 bg-card relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent"></div>
+        <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-transparent to-transparent"></div>
         <div className="relative z-10 max-w-md text-center">
           <div className="mb-8">
             <div className="h-20 w-20 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-6">

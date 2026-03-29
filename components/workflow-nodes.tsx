@@ -44,10 +44,10 @@ export const GoToUrlNode = (props: ExtendedNodeProps) => {
   
   return (
     <div
-      className={`relative rounded-lg border-2 border-blue-600 p-4 bg-linear-to-br from-blue-50 to-white dark:from-blue-950/30 dark:to-blue-900/20 text-foreground shadow-md min-w-55 transition-all ${
+      className={`relative rounded-lg border-2 border-blue-600 p-4 bg-linear-to-br from-blue-50 to-white dark:from-blue-950/30 dark:to-blue-900/20 text-foreground shadow-md min-w-55 transition-all duration-200 ${
         isSelected 
-          ? 'ring-2 ring-offset-2 ring-blue-500 scale-105 shadow-2xl border-blue-700 border-4' 
-          : 'hover:shadow-xl hover:border-blue-700 hover:scale-105'
+          ? 'ring-4 ring-blue-500 ring-offset-2 scale-110 shadow-2xl shadow-blue-500/50 border-blue-700 border-4' 
+          : 'hover:shadow-xl hover:border-blue-700 hover:scale-105 hover:ring-2 hover:ring-blue-500/50 hover:ring-offset-1'
       }`}
       onMouseEnter={() => setShowDelete(true)}
       onMouseLeave={() => setShowDelete(false)}
@@ -81,10 +81,10 @@ export const GoBackNode = (props: ExtendedNodeProps) => {
   
   return (
     <div
-      className={`relative rounded-lg border-2 border-purple-600 p-4 bg-linear-to-br from-purple-50 to-white dark:from-purple-950/30 dark:to-purple-900/20 text-foreground shadow-md min-w-55 transition-all ${
+      className={`relative rounded-lg border-2 border-purple-600 p-4 bg-linear-to-br from-purple-50 to-white dark:from-purple-950/30 dark:to-purple-900/20 text-foreground shadow-md min-w-55 transition-all duration-200 ${
         isSelected 
-          ? 'ring-2 ring-offset-2 ring-purple-500 scale-105 shadow-2xl border-purple-700 border-4' 
-          : 'hover:shadow-xl hover:border-purple-700 hover:scale-105'
+          ? 'ring-4 ring-purple-500 ring-offset-2 scale-110 shadow-2xl shadow-purple-500/50 border-purple-700 border-4' 
+          : 'hover:shadow-xl hover:border-purple-700 hover:scale-105 hover:ring-2 hover:ring-purple-500/50 hover:ring-offset-1'
       }`}
       onMouseEnter={() => setShowDelete(true)}
       onMouseLeave={() => setShowDelete(false)}
@@ -118,10 +118,10 @@ export const ReloadPageNode = (props: ExtendedNodeProps) => {
   
   return (
     <div
-      className={`relative rounded-lg border-2 border-cyan-600 p-4 bg-linear-to-br from-cyan-50 to-white dark:from-cyan-950/30 dark:to-cyan-900/20 text-foreground shadow-md min-w-55 transition-all ${
+      className={`relative rounded-lg border-2 border-cyan-600 p-4 bg-linear-to-br from-cyan-50 to-white dark:from-cyan-950/30 dark:to-cyan-900/20 text-foreground shadow-md min-w-55 transition-all duration-200 ${
         isSelected 
-          ? 'ring-2 ring-offset-2 ring-cyan-500 scale-105 shadow-2xl border-cyan-700 border-4' 
-          : 'hover:shadow-xl hover:border-cyan-700 hover:scale-105'
+          ? 'ring-4 ring-cyan-500 ring-offset-2 scale-110 shadow-2xl shadow-cyan-500/50 border-cyan-700 border-4' 
+          : 'hover:shadow-xl hover:border-cyan-700 hover:scale-105 hover:ring-2 hover:ring-cyan-500/50 hover:ring-offset-1'
       }`}
       onMouseEnter={() => setShowDelete(true)}
       onMouseLeave={() => setShowDelete(false)}
@@ -1044,7 +1044,124 @@ export const HttpRequestNode = (props: ExtendedNodeProps) => {
   )
 }
 
+// Generic Workflow Nodes
+export const TriggerNode = (props: ExtendedNodeProps) => {
+  const [showDelete, setShowDelete] = useState(false)
+  const isSelected = props.selected || false
+  
+  return (
+    <div
+      className={`relative rounded-lg border-2 border-yellow-500 p-4 bg-linear-to-br from-yellow-50 to-white dark:from-yellow-950/30 dark:to-yellow-900/20 text-foreground shadow-md min-w-64 transition-all duration-200 ${
+        isSelected 
+          ? 'ring-4 ring-yellow-500 ring-offset-2 scale-105 shadow-2xl shadow-yellow-500/50 border-yellow-600' 
+          : 'hover:shadow-lg hover:border-yellow-600 hover:scale-102'
+      }`}
+      onMouseEnter={() => setShowDelete(true)}
+      onMouseLeave={() => setShowDelete(false)}
+    >
+      <Handle type="target" position={Position.Top} id="in" />
+      <Handle type="source" position={Position.Bottom} id="out" />
+      {(showDelete || isSelected) && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            props.data.onDelete?.(props.id)
+          }}
+          className="absolute -top-3 -right-3 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg z-50 transition-all hover:scale-110"
+          title="Delete node"
+        >
+          <X className="h-3 w-3" />
+        </button>
+      )}
+      <div className="flex items-center gap-2 mb-2">
+        <AlertTriangle className="h-4 w-4 text-yellow-600" />
+        <span className="font-semibold text-sm">Trigger</span>
+        <span className="ml-auto text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 px-2 py-0.5 rounded-full">Start</span>
+      </div>
+      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+    </div>
+  )
+}
+
+export const ActionNode = (props: ExtendedNodeProps) => {
+  const [showDelete, setShowDelete] = useState(false)
+  const isSelected = props.selected || false
+  
+  return (
+    <div
+      className={`relative rounded-lg border-2 border-green-500 p-4 bg-linear-to-br from-green-50 to-white dark:from-green-950/30 dark:to-green-900/20 text-foreground shadow-md min-w-64 transition-all duration-200 ${
+        isSelected 
+          ? 'ring-4 ring-green-500 ring-offset-2 scale-105 shadow-2xl shadow-green-500/50 border-green-600' 
+          : 'hover:shadow-lg hover:border-green-600 hover:scale-102'
+      }`}
+      onMouseEnter={() => setShowDelete(true)}
+      onMouseLeave={() => setShowDelete(false)}
+    >
+      <Handle type="target" position={Position.Top} id="in" />
+      <Handle type="source" position={Position.Bottom} id="out" />
+      {(showDelete || isSelected) && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            props.data.onDelete?.(props.id)
+          }}
+          className="absolute -top-3 -right-3 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg z-50 transition-all hover:scale-110"
+          title="Delete node"
+        >
+          <X className="h-3 w-3" />
+        </button>
+      )}
+      <div className="flex items-center gap-2 mb-2">
+        <GitBranch className="h-4 w-4 text-green-600" />
+        <span className="font-semibold text-sm">Action</span>
+      </div>
+      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+    </div>
+  )
+}
+
+export const ConditionNode = (props: ExtendedNodeProps) => {
+  const [showDelete, setShowDelete] = useState(false)
+  const isSelected = props.selected || false
+  
+  return (
+    <div
+      className={`relative rounded-lg border-2 border-blue-500 p-4 bg-linear-to-br from-blue-50 to-white dark:from-blue-950/30 dark:to-blue-900/20 text-foreground shadow-md min-w-64 transition-all duration-200 ${
+        isSelected 
+          ? 'ring-4 ring-blue-500 ring-offset-2 scale-105 shadow-2xl shadow-blue-500/50 border-blue-600' 
+          : 'hover:shadow-lg hover:border-blue-600 hover:scale-102'
+      }`}
+      onMouseEnter={() => setShowDelete(true)}
+      onMouseLeave={() => setShowDelete(false)}
+    >
+      <Handle type="target" position={Position.Top} id="in" />
+      <Handle type="source" position={Position.Bottom} id="out" />
+      {(showDelete || isSelected) && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            props.data.onDelete?.(props.id)
+          }}
+          className="absolute -top-3 -right-3 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg z-50 transition-all hover:scale-110"
+          title="Delete node"
+        >
+          <X className="h-3 w-3" />
+        </button>
+      )}
+      <div className="flex items-center gap-2 mb-2">
+        <GitBranch className="h-4 w-4 text-blue-600" />
+        <span className="font-semibold text-sm">Condition</span>
+      </div>
+      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+    </div>
+  )
+}
+
 export const nodeTypes = {
+  // Generic workflow nodes
+  trigger: TriggerNode,
+  action: ActionNode,
+  condition: ConditionNode,
   // Navigation
   goToUrl: GoToUrlNode,
   goBack: GoBackNode,

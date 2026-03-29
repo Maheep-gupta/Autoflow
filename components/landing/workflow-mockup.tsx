@@ -78,7 +78,7 @@ export function WorkflowMockup() {
           {/* Node 1: Trigger */}
           <div className="flex items-center gap-6">
             <div
-              className={`flex-shrink-0 h-14 w-14 rounded-xl border-2 flex items-center justify-center transition-all duration-300 ${
+              className={`shrink-0 h-14 w-14 rounded-xl border-2 flex items-center justify-center transition-all duration-300 ${
                 nodes[0].glowing
                   ? 'border-red-400 bg-red-500/30 shadow-lg shadow-red-500/50'
                   : 'border-red-500/50 bg-red-500/10'
@@ -100,7 +100,7 @@ export function WorkflowMockup() {
           {/* Node 2: Filter */}
           <div className="flex items-center gap-6">
             <div
-              className={`flex-shrink-0 h-14 w-14 rounded-xl border-2 flex items-center justify-center transition-all duration-300 ${
+              className={`shrink-0 h-14 w-14 rounded-xl border-2 flex items-center justify-center transition-all duration-300 ${
                 nodes[1].glowing
                   ? 'border-blue-400 bg-blue-500/30 shadow-lg shadow-blue-500/50'
                   : 'border-blue-500/50 bg-blue-500/10'
@@ -122,7 +122,7 @@ export function WorkflowMockup() {
           {/* Node 3: Action */}
           <div className="flex items-center gap-6">
             <div
-              className={`flex-shrink-0 h-14 w-14 rounded-xl border-2 flex items-center justify-center transition-all duration-300 ${
+              className={`shrink-0 h-14 w-14 rounded-xl border-2 flex items-center justify-center transition-all duration-300 ${
                 nodes[2].glowing
                   ? 'border-purple-400 bg-purple-500/30 shadow-lg shadow-purple-500/50'
                   : 'border-purple-500/50 bg-purple-500/10'
@@ -139,7 +139,7 @@ export function WorkflowMockup() {
       </div>
 
       {/* Glow effect */}
-      <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-blue-500/20 to-cyan-500/20 blur-xl -z-10" />
+      <div className="absolute -inset-1 rounded-2xl bg-linear-to-r from-blue-500/20 to-cyan-500/20 blur-xl -z-10" />
     </div>
   )
 }

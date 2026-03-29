@@ -42,7 +42,7 @@ export function IntegrationsSection() {
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
             Smart use-case{' '}
-            <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
               integrations
             </span>
           </h2>
@@ -61,7 +61,7 @@ export function IntegrationsSection() {
                 className="group relative rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-8 hover:border-blue-500/30 transition-all duration-300 overflow-hidden"
               >
                 {/* Background glow */}
-                <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-blue-500/20 to-cyan-500/20 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-300 -z-10" />
+                <div className="absolute -inset-1 rounded-2xl bg-linear-to-r from-blue-500/20 to-cyan-500/20 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-300 -z-10" />
 
                 {/* Integration flow */}
                 <div className="flex items-center justify-between mb-6">

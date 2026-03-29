@@ -1,13 +1,12 @@
 'use client'
 
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect, use, useCallback, useRef } from 'react'
 import { WorkflowCanvas } from '@/components/workflow-canvas'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, Save, Play, CheckCircle, X } from 'lucide-react'
+import { ChevronLeft, CheckCircle, X, Zap, Edit2, Save } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 
 export default function WorkflowBuilderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -17,90 +16,47 @@ export default function WorkflowBuilderPage({ params }: { params: Promise<{ id: 
 
 function WorkflowBuilderContent({ workflowId }: { workflowId: string }) {
   const isNewWorkflow = workflowId?.includes('workflow-') || workflowId === 'new'
-  const [workflowName, setWorkflowName] = useState('')
-  const [workflowDescription, setWorkflowDescription] = useState('')
+  const [workflowName, setWorkflowName] = useState('Untitled Workflow')
   const [isEditing, setIsEditing] = useState(false)
-  const [editName, setEditName] = useState('')
-  const [editDescription, setEditDescription] = useState('')
-  const [isSaved, setIsSaved] = useState(false)
-  const [isRunning, setIsRunning] = useState(false)
+  const [editName, setEditName] = useState('Untitled Workflow')
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
+  const [isPublishing, setIsPublishing] = useState(false)
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Load workflow data from sessionStorage or localStorage on mount
+  // Auto-save on workflow changes (name changes, node changes, etc.)
   useEffect(() => {
-    if (typeof window === 'undefined') return
-    
-    console.log('🔄 Initializing workflow builder for:', { workflowId, isNewWorkflow })
-    
-    if (isNewWorkflow) {
-      // Try to get from sessionStorage first
-      let savedData = sessionStorage.getItem('newWorkflowData')
-      
-      // If not in sessionStorage, try localStorage
-      if (!savedData && workflowId) {
-        savedData = localStorage.getItem(`workflow-${workflowId}`)
-      }
-      
-      if (savedData) {
-        try {
-          const { name, description } = JSON.parse(savedData)
-          console.log('✅ Loaded workflow data from storage:', { name, description })
-          setWorkflowName(name || 'Untitled Workflow')
-          setWorkflowDescription(description || '')
-          setEditName(name || 'Untitled Workflow')
-          setEditDescription(description || '')
-          sessionStorage.removeItem('newWorkflowData')
-        } catch (e) {
-          console.error('❌ Failed to parse workflow data:', e)
-          setWorkflowName('Untitled Workflow')
-          setEditName('Untitled Workflow')
-        }
-      } else {
-        console.log('ℹ️ No saved workflow data found, using defaults')
-        setWorkflowName('Untitled Workflow')
-        setEditName('Untitled Workflow')
-      }
-    } else {
-      // For existing workflows, set default values
-      console.log('📂 Loading existing workflow')
-      setWorkflowName('Slack Notification on New Email')
-      setWorkflowDescription('Send Slack message when new email arrives in Gmail')
-      setEditName('Slack Notification on New Email')
-      setEditDescription('Send Slack message when new email arrives in Gmail')
+    // Clear previous timeout
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current)
     }
-  }, [isNewWorkflow, workflowId])
 
-  const handleSave = () => {
-    console.log('💾 WorkflowBuilder: Saving workflow', { workflowId, name: workflowName })
-    setIsSaved(true)
-    toast.success('Workflow saved successfully', {
-      description: `${workflowName} has been saved.`
-    })
-    console.log('✅ WorkflowBuilder: Workflow saved and marked as persisted')
-    setTimeout(() => setIsSaved(false), 2000)
-  }
+    // Set new timeout for auto-save
+    setSaveStatus('saving')
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      // Simulate save
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(`workflow-${workflowId}`, JSON.stringify({
+          name: workflowName,
+          updatedAt: new Date().toISOString(),
+        }))
+      }
+      setSaveStatus('saved')
+      setTimeout(() => setSaveStatus('idle'), 2000)
+    }, 2000)
 
-  const handleTest = () => {
-    console.log('🧪 WorkflowBuilder: Starting workflow test for', { workflowId, name: workflowName })
-    setIsRunning(true)
-    toast.info('Testing workflow', {
-      description: 'Your workflow is being tested...'
-    })
-    setTimeout(() => {
-      setIsRunning(false)
-      console.log('✅ WorkflowBuilder: Workflow test completed successfully')
-      toast.success('Workflow test completed', {
-        description: 'Check the console logs for execution details.'
-      })
-    }, 1500)
-  }
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current)
+      }
+    }
+  }, [workflowName, workflowId])
 
-  const handleEditStart = () => {
+  const handleNameEdit = () => {
     setEditName(workflowName)
-    setEditDescription(workflowDescription)
     setIsEditing(true)
   }
 
-  const handleEditSave = () => {
+  const handleNameSave = () => {
     if (!editName.trim()) {
       toast.error('Workflow name cannot be empty', {
         description: 'Please enter a valid workflow name.'
@@ -108,129 +64,123 @@ function WorkflowBuilderContent({ workflowId }: { workflowId: string }) {
       return
     }
     setWorkflowName(editName.trim())
-    setWorkflowDescription(editDescription.trim())
     setIsEditing(false)
-    toast.success('Changes saved', {
-      description: 'Workflow name and description updated.'
+    toast.success('Workflow name updated', {
+      description: `Renamed to "${editName.trim()}".`
     })
   }
 
-  const handleEditCancel = () => {
+  const handleNameCancel = () => {
     setIsEditing(false)
   }
 
+  const handlePublish = async () => {
+    setIsPublishing(true)
+    toast.loading('Publishing workflow...', {
+      description: 'Your workflow is being published'
+    })
+    
+    setTimeout(() => {
+      setIsPublishing(false)
+      toast.success('Workflow published successfully! 🚀', {
+        description: 'Your workflow is now live and ready to use.'
+      })
+    }, 1500)
+  }
+
   return (
-    <div className="flex flex-col h-screen bg-background text-foreground">
-      {/* Enhanced Header */}
-      <div className="border-b border-border/50 bg-gradient-to-r from-background via-card/30 to-background p-6 flex items-center justify-between shadow-md">
-        <div className="flex items-center gap-3 flex-1 min-w-0">
+    <div className="flex flex-col h-screen bg-background text-foreground overflow-hidden">
+      {/* Enhanced Header with Controls */}
+      <div className="border-b border-border/50 bg-linear-to-r from-background via-card/20 to-background px-6 py-4 flex items-center justify-between shadow-sm">
+        <div className="flex items-center gap-4 flex-1 min-w-0">
           <Link href="/dashboard">
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground hover:bg-accent/20 transition-all duration-200 rounded-lg">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="text-muted-foreground hover:text-foreground hover:bg-accent/20 transition-all rounded-lg"
+            >
               <ChevronLeft className="h-5 w-5" />
             </Button>
           </Link>
           
-          <div className="h-8 w-px bg-border/50"></div>
+          <div className="h-8 w-px bg-border/30"></div>
           
-          <div className="flex-1 min-w-0 cursor-pointer group" onClick={handleEditStart}>
+          {/* Workflow Name - Inline Edit */}
+          <div className="flex-1 min-w-0">
             {isEditing ? (
-              <div className="space-y-3 bg-card/50 p-4 rounded-lg border border-border/50">
-                <div>
-                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Workflow Name</label>
-                  <Input
-                    value={editName}
-                    onChange={(e) => setEditName(e.target.value)}
-                    placeholder="Enter workflow name"
-                    className="text-xl font-bold h-10 text-foreground bg-background border-border/50"
-                    autoFocus
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Description</label>
-                  <Textarea
-                    value={editDescription}
-                    onChange={(e) => setEditDescription(e.target.value)}
-                    placeholder="Add a description for this workflow"
-                    className="text-sm text-foreground resize-none h-12 bg-background border-border/50"
-                  />
-                </div>
-                <div className="flex gap-2 pt-2">
-                  <Button
-                    size="sm"
-                    className="gap-2 bg-green-600 hover:bg-green-700 shadow-md"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleEditSave()
-                    }}
-                  >
-                    <CheckCircle className="h-4 w-4" />
-                    Save
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="gap-2 border-border/50"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleEditCancel()
-                    }}
-                  >
-                    <X className="h-4 w-4" />
-                    Cancel
-                  </Button>
-                </div>
+              <div className="flex items-center gap-2 bg-card/50 border border-border/50 rounded-lg px-3 py-2">
+                <Input
+                  value={editName}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditName(e.target.value)}
+                  placeholder="Enter workflow name"
+                  className="text-lg font-semibold text-foreground bg-transparent border-0 h-8 p-0 focus:outline-none"
+                  autoFocus
+                  onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                    if (e.key === 'Enter') handleNameSave()
+                    if (e.key === 'Escape') handleNameCancel()
+                  }}
+                />
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 w-6 p-0 hover:bg-green-500/20 text-green-600"
+                  onClick={handleNameSave}
+                >
+                  <CheckCircle className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 w-6 p-0 hover:bg-red-500/20 text-red-600"
+                  onClick={handleNameCancel}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
             ) : (
-              <div className="group/text relative">
-                <h1 className="text-3xl font-bold text-foreground truncate leading-tight group-hover/text:text-primary transition-colors duration-200">
-                  {workflowName || 'New Workflow'}
-                </h1>
-                <p className="text-sm text-muted-foreground/80 truncate mt-1 group-hover/text:text-muted-foreground transition-colors duration-200">
-                  {workflowDescription || '✏️ Click to add description'}
-                </p>
-                <div className="absolute -right-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-xs text-muted-foreground font-medium">Edit</div>
+              <div 
+                className="group cursor-pointer"
+                onClick={handleNameEdit}
+              >
+                <div className="flex items-center gap-2">
+                  <h1 className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors">
+                    {workflowName}
+                  </h1>
+                  <Edit2 className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <div className="text-xs text-muted-foreground/60 mt-0.5">
+                  {saveStatus === 'saving' && '💾 Saving...'}
+                  {saveStatus === 'saved' && '✅ Saved'}
+                </div>
               </div>
             )}
           </div>
         </div>
 
-        <div className="flex items-center gap-3 ml-8">
-          <div className="h-8 w-px bg-border/50"></div>
-          
+        {/* Top Right Actions */}
+        <div className="flex items-center gap-2 ml-6">
           <Button
             variant="outline"
-            className={`gap-2 text-foreground border-border/50 hover:bg-accent/20 hover:border-accent/50 transition-all duration-200 font-medium ${
-              isRunning ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
-            onClick={handleTest}
-            disabled={isRunning}
+            className="gap-2 text-foreground border-border/50 hover:bg-accent/20 font-medium text-sm"
+            disabled={isPublishing}
           >
-            <Play className="h-4 w-4" />
-            <span className="hidden sm:inline">{isRunning ? 'Testing...' : 'Test Workflow'}</span>
+            <span>Test</span>
           </Button>
           
           <Button
-            className={`gap-2 transition-all font-semibold shadow-md ${
-              isSaved 
-                ? 'bg-green-600 hover:bg-green-700 text-white shadow-lg scale-105' 
-                : 'bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg'
-            }`}
-            onClick={handleSave}
+            className="gap-2 font-semibold text-sm bg-linear-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-md"
+            onClick={handlePublish}
+            disabled={isPublishing}
           >
-            {isSaved && <CheckCircle className="h-4 w-4 animate-pulse" />}
-            {isSaved ? 'Saved' : (
-              <>
-                <Save className="h-4 w-4" />
-                <span className="hidden sm:inline">Save Workflow</span>
-              </>
-            )}
+            <Zap className="h-4 w-4" />
+            <span>Publish</span>
           </Button>
         </div>
       </div>
 
       {/* Canvas */}
       <div className="flex-1 overflow-hidden">
-        <WorkflowCanvas isNew={isNewWorkflow} />
+        <WorkflowCanvas isNew={isNewWorkflow} workflowName={workflowName} />
       </div>
     </div>
   )

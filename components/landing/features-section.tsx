@@ -45,7 +45,7 @@ export function FeaturesSection() {
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
             Everything you need to{' '}
-            <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
               automate smarter
             </span>
           </h2>
@@ -60,11 +60,11 @@ export function FeaturesSection() {
             return (
               <div
                 key={feature.title}
-                className={`group relative rounded-2xl border ${feature.borderColor} bg-gradient-to-br ${feature.gradient} backdrop-blur-xl p-8 hover:border-opacity-50 transition-all duration-300 cursor-pointer`}
+                className={`group relative rounded-2xl border ${feature.borderColor} bg-linear-to-br ${feature.gradient} backdrop-blur-xl p-8 hover:border-opacity-50 transition-all duration-300 cursor-pointer`}
               >
                 {/* Glow effect on hover */}
                 <div
-                  className={`absolute -inset-1 rounded-2xl bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-300 -z-10`}
+                  className={`absolute -inset-1 rounded-2xl bg-linear-to-br ${feature.gradient} opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-300 -z-10`}
                 />
 
                 {/* Icon container */}
@@ -83,7 +83,7 @@ export function FeaturesSection() {
                 <p className="text-white/60 leading-relaxed">{feature.description}</p>
 
                 {/* Focus indicator line */}
-                <div className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full w-0 group-hover:w-full transition-all duration-500" />
+                <div className="absolute bottom-0 left-0 h-1 bg-linear-to-r from-blue-500 to-cyan-500 rounded-full w-0 group-hover:w-full transition-all duration-500" />
               </div>
             )
           })}

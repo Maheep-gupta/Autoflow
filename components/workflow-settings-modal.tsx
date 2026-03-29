@@ -40,7 +40,7 @@ export function WorkflowSettingsModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <div className="bg-card border border-border rounded-xl shadow-2xl max-w-md w-full mx-4 animate-in fade-in duration-300">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-border/50 bg-gradient-to-r from-primary/5 to-transparent">
+        <div className="flex items-center justify-between p-6 border-b border-border/50 bg-linear-to-r from-primary/5 to-transparent">
           <div>
             <h2 className="text-xl font-bold text-foreground">Workflow Settings</h2>
             <p className="text-xs text-muted-foreground mt-1">Update your workflow details</p>

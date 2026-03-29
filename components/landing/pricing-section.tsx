@@ -78,7 +78,7 @@ export function PricingSection() {
         <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
             Simple, transparent{' '}
-            <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
               pricing
             </span>
           </h2>
@@ -117,20 +117,20 @@ export function PricingSection() {
               key={plan.name}
               className={`relative group rounded-2xl border backdrop-blur-xl transition-all duration-300 ${
                 plan.highlighted
-                  ? 'border-blue-500/50 bg-gradient-to-br from-blue-500/20 to-cyan-500/10 scale-105 md:scale-105 shadow-2xl shadow-blue-500/20'
+                  ? 'border-blue-500/50 bg-linear-to-br from-blue-500/20 to-cyan-500/10 scale-105 md:scale-105 shadow-2xl shadow-blue-500/20'
                   : 'border-white/10 bg-white/[0.02] hover:border-white/20'
               }`}
             >
               {/* Glow effect for highlighted */}
               {plan.highlighted && (
-                <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-blue-500/30 to-cyan-500/30 blur-xl opacity-50 group-hover:opacity-70 transition-opacity -z-10" />
+                <div className="absolute -inset-1 rounded-2xl bg-linear-to-r from-blue-500/30 to-cyan-500/30 blur-xl opacity-50 group-hover:opacity-70 transition-opacity -z-10" />
               )}
 
               <div className="p-8">
                 {/* Badge */}
                 {plan.highlighted && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <span className="px-4 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-blue-500 to-cyan-500 text-white">
+                    <span className="px-4 py-1 rounded-full text-xs font-bold bg-linear-to-r from-blue-500 to-cyan-500 text-white">
                       ⭐ MOST POPULAR
                     </span>
                   </div>
@@ -156,7 +156,7 @@ export function PricingSection() {
                   <Button
                     className={`w-full h-12 font-semibold transition-all ${
                       plan.highlighted
-                        ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white border-0 hover:shadow-lg hover:shadow-blue-500/50'
+                        ? 'bg-linear-to-r from-blue-500 to-cyan-500 text-white border-0 hover:shadow-lg hover:shadow-blue-500/50'
                         : 'border border-white/20 text-white hover:bg-white/10'
                     }`}
                     variant={plan.highlighted ? 'default' : 'outline'}
@@ -169,7 +169,7 @@ export function PricingSection() {
                 <div className="space-y-3 border-t border-white/10 pt-8">
                   {plan.features.map((feature) => (
                     <div key={feature} className="flex items-start gap-3">
-                      <Check className="h-5 w-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                      <Check className="h-5 w-5 text-blue-400 shrink-0 mt-0.5" />
                       <span className="text-white/70 text-sm">{feature}</span>
                     </div>
                   ))}

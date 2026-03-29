@@ -16,39 +16,69 @@ import { nodeTypes } from './workflow-nodes'
 import { ConfigPanel } from './config-panel'
 import { AddNodeModal } from './add-node-modal'
 import { Button } from '@/components/ui/button'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, Zap, GitBranch } from 'lucide-react'
+import { toast } from 'sonner'
 
-const initialNodes: Node[] = [
-  {
-    id: 'trigger-1',
-    type: 'trigger',
-    position: { x: 250, y: 5 },
-    data: { label: 'On New Email' },
-  },
-  {
-    id: 'action-1',
-    type: 'action',
-    position: { x: 100, y: 150 },
-    data: { label: 'Send Slack Message' },
-  },
-  {
-    id: 'action-2',
-    type: 'action',
-    position: { x: 400, y: 150 },
-    data: { label: 'Save to Notion' },
-  },
-]
+const initialNodes: Node[] = []
 
-const initialEdges: Edge[] = [
-  { id: 'e1-a1', source: 'trigger-1', target: 'action-1' },
-  { id: 'e1-a2', source: 'trigger-1', target: 'action-2' },
-]
+const initialEdges: Edge[] = []
 
 interface WorkflowCanvasProps {
   isNew?: boolean
+  workflowName?: string
 }
 
-export function WorkflowCanvas({ isNew = false }: WorkflowCanvasProps) {
+// Node categories for the left sidebar
+const nodeCategories = [
+  {
+    name: 'Trigger',
+    icon: Zap,
+    description: 'Start your workflow',
+    types: ['trigger'],
+    color: 'text-yellow-500',
+    examples: ['Gmail', 'Webhook', 'Schedule'],
+  },
+  {
+    name: 'Action',
+    icon: GitBranch,
+    description: 'Do something',
+    types: ['action', 'openBrowser', 'fillInput', 'clickElement', 'selectDropdown', 'getText'],
+    color: 'text-green-500',
+    examples: ['Send Email', 'Slack Message', 'Notion'],
+  },
+  {
+    name: 'Condition',
+    icon: GitBranch,
+    description: 'Add logic',
+    types: ['condition', 'if', 'else', 'ifElse', 'switch'],
+    color: 'text-blue-500',
+    examples: ['If...Then', 'Switch', 'Delay'],
+  },
+]
+
+const typeNames: { [key: string]: string } = {
+  trigger: 'Trigger',
+  action: 'Action',
+  condition: 'Condition',
+  delay: 'Delay',
+  webhook: 'Webhook',
+  apiRequest: 'API Request',
+  if: 'If',
+  else: 'Else',
+  ifElse: 'If-Else',
+  switch: 'Switch',
+  forLoop: 'For Loop',
+  whileLoop: 'While Loop',
+  openBrowser: 'Open URL',
+  fillInput: 'Fill Input',
+  clickElement: 'Click Element',
+  selectDropdown: 'Select Dropdown',
+  getText: 'Get Text',
+  checkExists: 'Check Exists',
+  screenshot: 'Screenshot',
+}
+
+export function WorkflowCanvas({ isNew = false, workflowName = 'Untitled Workflow' }: WorkflowCanvasProps) {
   const emptyNodes: Node[] = []
   const emptyEdges: Edge[] = []
   
@@ -56,6 +86,86 @@ export function WorkflowCanvas({ isNew = false }: WorkflowCanvasProps) {
   const [edges, setEdges, onEdgesChange] = useEdgesState(isNew ? emptyEdges : initialEdges)
   const [selectedNode, setSelectedNode] = useState<Node | null>(null)
   const [isAddNodeOpen, setIsAddNodeOpen] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+
+  // Calculate auto position for next node
+  const getNextNodePosition = (currentNodes: Node[]) => {
+    if (currentNodes.length === 0) {
+      return { x: 200, y: 50 } // Trigger position
+    }
+    // Stack nodes vertically with 120px spacing
+    const lastNode = currentNodes[currentNodes.length - 1]
+    return { x: lastNode.position.x, y: lastNode.position.y + 140 }
+  }
+
+  // Delete node and clean up edges
+  const deleteNode = useCallback((nodeId: string) => {
+    setNodes((nds) => nds.filter((n) => n.id !== nodeId))
+    setEdges((eds) =>
+      eds.filter(
+        (e) => e.source !== nodeId && e.target !== nodeId
+      )
+    )
+    setSelectedNode((prev) => (prev?.id === nodeId ? null : prev))
+  }, [setNodes, setEdges])
+
+  // Add node with auto-positioning and validation
+  const addNode = useCallback((type: string) => {
+    setNodes((nds) => {
+      // Validation: Cannot add action/condition if no trigger exists
+      const hasTrigger = nds.some((n) => n.type === 'trigger')
+      if (type !== 'trigger' && !hasTrigger) {
+        toast.error('Add a trigger first', {
+          description: 'Every workflow must start with a trigger event.'
+        })
+        return nds
+      }
+
+      // Validation: Only one trigger allowed
+      if (type === 'trigger' && hasTrigger) {
+        toast.error('Only one trigger allowed', {
+          description: 'A workflow can only have one trigger event.'
+        })
+        return nds
+      }
+
+      const sameTypeNodes = nds.filter((n) => n.type === type).length + 1
+      const baseLabel = typeNames[type] || type
+      const label = `${baseLabel} ${sameTypeNodes}`
+
+      // Calculate position - use selected node if available, else use last node
+      let referenceNode = selectedNode ? nds.find(n => n.id === selectedNode.id) : nds[nds.length - 1]
+      const position = referenceNode 
+        ? { x: referenceNode.position.x, y: referenceNode.position.y + 140 }
+        : getNextNodePosition(nds)
+
+      const newNode: Node = {
+        id: `${type}-${Date.now()}`,
+        type,
+        position,
+        data: { label, description: '', onDelete: deleteNode },
+      }
+
+      // Auto-connect to selected node or last node
+      const newNodes = [...nds, newNode]
+      if (referenceNode) {
+        const newEdge: Edge = {
+          id: `e-${referenceNode.id}-${newNode.id}`,
+          source: referenceNode.id,
+          target: newNode.id,
+          animated: true,
+          style: { stroke: '#3b82f6', strokeWidth: 2 },
+        }
+        setEdges((eds) => [...eds, newEdge])
+      }
+
+      return newNodes
+    })
+    setIsAddNodeOpen(false)
+    toast.success('Node added', {
+      description: 'Connected to the workflow flow.'
+    })
+  }, [setNodes, setEdges, deleteNode, selectedNode])
 
   const onConnect = useCallback(
     (connection: Connection) => {
@@ -80,87 +190,23 @@ export function WorkflowCanvas({ isNew = false }: WorkflowCanvasProps) {
     setSelectedNode(null)
   }, [])
 
-  const typeNames: { [key: string]: string } = {
-    trigger: 'Trigger',
-    action: 'Action',
-    condition: 'Condition',
-    delay: 'Delay',
-    webhook: 'Webhook',
-    apiRequest: 'API Request',
-    if: 'If',
-    else: 'Else',
-    ifElse: 'If-Else',
-    switch: 'Switch',
-    forLoop: 'For Loop',
-    whileLoop: 'While Loop',
-    openBrowser: 'Open URL',
-    fillInput: 'Fill Input',
-    clickElement: 'Click Element',
-    selectDropdown: 'Select Dropdown',
-    getText: 'Get Text',
-    checkExists: 'Check Exists',
-    screenshot: 'Screenshot',
-  }
-
-  const addNode = (type: string) => {
-    const sameTypeNodes = nodes.filter((n) => n.type === type).length + 1
-    const baseLabel = typeNames[type] || type
-    const label = `${baseLabel} ${sameTypeNodes}`
-
-    const newNode: Node = {
-      id: `${type}-${Date.now()}`,
-      type,
-      position: {
-        x: 250 + Math.random() * 100,
-        y: 250 + Math.random() * 100,
-      },
-      data: { label, description: '' },
-    }
-    setNodes((nds) => [...nds, newNode])
-    setSelectedNode(newNode)
-  }
-
-  const deleteNode = (nodeId: string) => {
-    setNodes((nds) => nds.filter((n) => n.id !== nodeId))
-    setEdges((eds) =>
-      eds.filter(
-        (e) => e.source !== nodeId && e.target !== nodeId
-      )
-    )
-    if (selectedNode?.id === nodeId) {
-      setSelectedNode(null)
-    }
-  }
-
   const deleteSelectedNode = () => {
     if (selectedNode) {
       deleteNode(selectedNode.id)
     }
   }
 
-  React.useEffect(() => {
-    setNodes((nds) =>
-      nds.map((n) => ({
-        ...n,
-        data: { ...n.data, onDelete: deleteNode }
-      }))
-    )
-  }, [setNodes])
-
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Cmd+K or Ctrl+K to open add node modal
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault()
         setIsAddNodeOpen(true)
       }
-      // Delete or Backspace to delete selected node
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedNode && e.target === document.body) {
         e.preventDefault()
         deleteSelectedNode()
       }
-      // Escape to deselect
       if (e.key === 'Escape') {
         setSelectedNode(null)
       }
@@ -171,19 +217,114 @@ export function WorkflowCanvas({ isNew = false }: WorkflowCanvasProps) {
   }, [selectedNode])
 
   return (
-    <div className="flex w-full h-full gap-5 bg-background text-foreground p-5 relative">
-      {/* Canvas - Primary Focus */}
-      <div className="flex-1 relative">
-        <div className="absolute inset-0 border border-border/60 rounded-xl overflow-hidden bg-gradient-to-br from-background/80 via-muted/10 to-background shadow-sm hover:shadow-md transition-shadow duration-300 z-0">
+    <div className="flex w-full h-full gap-0 bg-background text-foreground relative">
+      {/* Left Sidebar - Node Categories */}
+      <div className="w-64 border-r border-border/50 bg-card/30 flex flex-col overflow-hidden">
+        {/* Header */}
+        <div className="border-b border-border/50 px-4 py-4 bg-linear-to-b from-card to-card/50">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Nodes</h3>
+          <p className="text-xs text-muted-foreground/70">Select to add</p>
+        </div>
+
+        {/* Categories */}
+        <div className="flex-1 overflow-y-auto p-3 space-y-2">
+          {nodeCategories.map((category) => {
+            const Icon = category.icon
+            const isOpen = selectedCategory === category.name
+            const hasTrigger = nodes.some((n) => n.type === 'trigger')
+            const isDisabled = category.name !== 'Trigger' && !hasTrigger
+            const hasTriggerAlready = category.name === 'Trigger' && hasTrigger
+            
+            return (
+              <div key={category.name}>
+                <button
+                  onClick={() => {
+                    if (!isDisabled && !hasTriggerAlready) {
+                      setSelectedCategory(isOpen ? null : category.name)
+                    }
+                  }}
+                  disabled={isDisabled || hasTriggerAlready}
+                  className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg transition-colors text-left group ${
+                    isDisabled || hasTriggerAlready
+                      ? 'opacity-40 cursor-not-allowed'
+                      : 'hover:bg-accent/20'
+                  }`}
+                >
+                  <Icon className={`h-4 w-4 ${category.color}`} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground">{category.name}</p>
+                    <p className="text-xs text-muted-foreground/60 truncate">
+                      {hasTriggerAlready && category.name === 'Trigger' ? 'Already added' : category.description}
+                    </p>
+                  </div>
+                </button>
+
+                {/* Show unlock message */}
+                {isDisabled && (
+                  <div className="ml-2 mt-1.5 text-xs text-yellow-600/70 italic">
+                    ⚡ Add a trigger first
+                  </div>
+                )}
+
+                {/* Expanded category - Show examples */}
+                {isOpen && !isDisabled && !hasTriggerAlready && (
+                  <div className="ml-2 mt-2 space-y-1.5 border-l-2 border-primary/30 pl-3">
+                    {category.examples.map((example) => (
+                      <button
+                        key={example}
+                        onClick={() => {
+                          addNode(category.types[0])
+                          setSelectedCategory(null)
+                        }}
+                        className="w-full text-left text-xs px-2 py-2 rounded text-muted-foreground hover:text-foreground hover:bg-primary/10 transition-colors"
+                      >
+                        + {example}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Footer - Help text */}
+        <div className="border-t border-border/50 px-4 py-3 bg-muted/10 text-xs text-muted-foreground/60 text-center">
+          � Drag from nodes to connect
+        </div>
+      </div>
+
+      {/* Center Canvas */}
+      <div className="flex-1 relative flex flex-col">
+        <div className="absolute inset-0 border-r border-border/50 bg-linear-to-br from-background/80 via-muted/5 to-background/80 overflow-hidden">
           {nodes.length === 0 && (
-            <div className="absolute inset-0 flex items-center justify-center z-10 bg-gradient-to-br from-background/40 to-muted/20 backdrop-blur-sm">
-              <div className="text-center space-y-4">
-                <div className="text-6xl opacity-30 animate-bounce">📋</div>
-                <div>
-                  <h3 className="text-xl font-bold text-foreground mb-2">Ready to build?</h3>
-                  <p className="text-sm text-muted-foreground/80 max-w-xs">Click the <span className="font-semibold text-primary">➕ Add Node</span> button or press <span className="font-semibold">Cmd+K</span> to start</p>
+            <div className="absolute inset-0 flex items-center justify-center z-10 bg-linear-to-br from-background/40 to-muted/20 backdrop-blur-sm">
+              <div className="text-center space-y-6 px-8">
+                <div className="space-y-2">
+                  <div className="text-5xl opacity-40">⚙️</div>
+                  <h3 className="text-2xl font-bold text-foreground">Start by adding a trigger</h3>
+                  <p className="text-sm text-muted-foreground/80 max-w-sm">
+                    A trigger is the event that starts your workflow. Like Gmail, Webhook, or Schedule.
+                  </p>
                 </div>
-                <div className="pt-2 text-xs text-muted-foreground/60">💡 Connect nodes to create your automation flow</div>
+
+                <div className="flex gap-2 justify-center">
+                  <Button
+                    onClick={() => {
+                      addNode('trigger')
+                      setIsAddNodeOpen(false)
+                    }}
+                    className="gap-2 bg-linear-to-r from-yellow-600 to-yellow-700 hover:from-yellow-700 hover:to-yellow-800 text-white shadow-lg"
+                  >
+                    <Zap className="h-4 w-4" />
+                    Add Trigger
+                  </Button>
+                </div>
+
+                <div className="pt-4 text-xs text-muted-foreground/60 space-y-1">
+                  <p>💡 Or press <span className="font-semibold">Cmd+K</span> to search</p>
+                  <p>Use the left panel to browse all available nodes</p>
+                </div>
               </div>
             </div>
           )}
@@ -194,31 +335,34 @@ export function WorkflowCanvas({ isNew = false }: WorkflowCanvasProps) {
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             onNodeClick={handleNodeClick}
+            onPaneClick={handleCanvasClick}
             nodeTypes={nodeTypes}
             fitView
           >
-            <Background />
+            <Background color="rgba(200, 200, 200, 0.1)" gap={16} size={0.5} />
             <Controls />
           </ReactFlow>
         </div>
 
-        {/* Floating Add Node Button */}
-        <button
-          onClick={() => setIsAddNodeOpen(true)}
-          className="absolute bottom-6 right-6 z-20 flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200"
-          title="Add node (Cmd+K)"
-        >
-          <Plus className="h-5 w-5" />
-          <span className="hidden sm:inline">Add Node</span>
-        </button>
+        {/* Floating Add Node Button - Only show if nodes exist */}
+        {nodes.length > 0 && (
+          <button
+            onClick={() => setIsAddNodeOpen(true)}
+            className="absolute bottom-6 right-6 z-20 flex items-center gap-2 px-4 py-3 bg-linear-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200"
+            title="Add node (Cmd+K)"
+          >
+            <Plus className="h-5 w-5" />
+            <span className="hidden sm:inline">Add Node</span>
+          </button>
+        )}
       </div>
 
-      {/* Sidebar - Config Only */}
-      <div className="w-80 border border-border/60 rounded-xl flex flex-col bg-card shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
+      {/* Right Sidebar - Config Panel */}
+      <div className="w-80 border-l border-border/50 bg-card/30 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="px-5 py-4 border-b border-border/50 bg-muted/20 flex items-center justify-between">
-          <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
-            {selectedNode ? '⚙️ Node Settings' : '← Select Node'}
+        <div className="border-b border-border/50 px-5 py-4 bg-linear-to-b from-card to-card/50 flex items-center justify-between">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            {selectedNode ? '⚙️ Settings' : '← Select'}
           </h3>
           {selectedNode && (
             <button
@@ -245,10 +389,10 @@ export function WorkflowCanvas({ isNew = false }: WorkflowCanvasProps) {
             />
           ) : (
             <div className="p-5 text-sm text-muted-foreground text-center space-y-3 h-full flex flex-col items-center justify-center">
-              <div className="text-4xl">👇</div>
+              <div className="text-4xl">👆</div>
               <div>
                 <p className="font-semibold text-foreground mb-1">No node selected</p>
-                <p className="text-xs opacity-70 leading-relaxed">Click on a node in the canvas or add a new one using the <span className="font-semibold">➕ Add Node</span> button to start configuring</p>
+                <p className="text-xs opacity-70 leading-relaxed">Click on a node in the canvas to configure it</p>
               </div>
             </div>
           )}
