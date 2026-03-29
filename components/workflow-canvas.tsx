@@ -81,105 +81,181 @@ const typeNames: { [key: string]: string } = {
 export function WorkflowCanvas({ isNew = false, workflowName = 'Untitled Workflow' }: WorkflowCanvasProps) {
   const emptyNodes: Node[] = []
   const emptyEdges: Edge[] = []
-  
+
   const [nodes, setNodes, onNodesChange] = useNodesState(isNew ? emptyNodes : initialNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(isNew ? emptyEdges : initialEdges)
   const [selectedNode, setSelectedNode] = useState<Node | null>(null)
   const [isAddNodeOpen, setIsAddNodeOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
 
-  // Calculate auto position for next node
-  const getNextNodePosition = (currentNodes: Node[]) => {
-    if (currentNodes.length === 0) {
-      return { x: 200, y: 50 } // Trigger position
-    }
-    // Stack nodes vertically with 120px spacing
-    const lastNode = currentNodes[currentNodes.length - 1]
-    return { x: lastNode.position.x, y: lastNode.position.y + 140 }
+const isPositionOccupied = (nds: Node[], x: number, y: number) => {
+  return nds.some(
+    (n) =>
+      Math.abs(n.position.x - x) < 120 &&
+      Math.abs(n.position.y - y) < 100
+  )
+}
+
+const getSmartPosition = (
+  nds: Node[],
+  eds: Edge[],
+  referenceNode?: Node
+) => {
+  if (!referenceNode) return { x: 200, y: 50 }
+
+  const children = eds.filter(e => e.source === referenceNode.id)
+
+  const spacingX = 180
+  const spacingY = 140
+
+  let x =
+    referenceNode.position.x -
+    ((children.length * spacingX) / 2) +
+    children.length * spacingX
+
+  let y = referenceNode.position.y + spacingY
+
+  // 🔥 avoid collision
+  while (isPositionOccupied(nds, x, y)) {
+    y += spacingY
   }
+
+  return { x, y }
+}
+
 
   // Delete node and clean up edges
   const deleteNode = useCallback((nodeId: string) => {
-    setNodes((nds) => nds.filter((n) => n.id !== nodeId))
-    setEdges((eds) =>
-      eds.filter(
-        (e) => e.source !== nodeId && e.target !== nodeId
-      )
+  setEdges((eds) => {
+    const getDescendants = (id: string): string[] => {
+      const children = eds
+        .filter(e => e.source === id)
+        .map(e => e.target)
+
+      return children.flatMap(child => [child, ...getDescendants(child)])
+    }
+
+    const descendants = getDescendants(nodeId)
+    const idsToDelete = new Set([nodeId, ...descendants])
+
+    // remove nodes
+    setNodes((nds) => nds.filter(n => !idsToDelete.has(n.id)))
+
+    // remove edges
+    return eds.filter(
+      e => !idsToDelete.has(e.source) && !idsToDelete.has(e.target)
     )
-    setSelectedNode((prev) => (prev?.id === nodeId ? null : prev))
-  }, [setNodes, setEdges])
+  })
+
+  setSelectedNode(null)
+}, [setNodes, setEdges])
 
   // Add node with auto-positioning and validation
-  const addNode = useCallback((type: string) => {
-    setNodes((nds) => {
-      // Validation: Cannot add action/condition if no trigger exists
-      const hasTrigger = nds.some((n) => n.type === 'trigger')
-      if (type !== 'trigger' && !hasTrigger) {
-        toast.error('Add a trigger first', {
-          description: 'Every workflow must start with a trigger event.'
-        })
-        return nds
-      }
+const addNode = useCallback((type: string) => {
+  setNodes((nds) => {
+    const hasTrigger = nds.some((n) => n.type === 'trigger')
 
-      // Validation: Only one trigger allowed
-      if (type === 'trigger' && hasTrigger) {
-        toast.error('Only one trigger allowed', {
-          description: 'A workflow can only have one trigger event.'
-        })
-        return nds
-      }
+    if (type !== 'trigger' && !hasTrigger) {
+      toast.error('Add a trigger first')
+      return nds
+    }
 
-      const sameTypeNodes = nds.filter((n) => n.type === type).length + 1
-      const baseLabel = typeNames[type] || type
-      const label = `${baseLabel} ${sameTypeNodes}`
+    if (type === 'trigger' && hasTrigger) {
+      toast.error('Only one trigger allowed')
+      return nds
+    }
 
-      // Calculate position - use selected node if available, else use last node
-      let referenceNode = selectedNode ? nds.find(n => n.id === selectedNode.id) : nds[nds.length - 1]
-      const position = referenceNode 
-        ? { x: referenceNode.position.x, y: referenceNode.position.y + 140 }
-        : getNextNodePosition(nds)
+    const sameTypeNodes = nds.filter((n) => n.type === type).length + 1
+    const label = `${typeNames[type] || type} ${sameTypeNodes}`
 
-      const newNode: Node = {
-        id: `${type}-${Date.now()}`,
-        type,
-        position,
-        data: { label, description: '', onDelete: deleteNode },
-      }
+    const referenceNode =
+      selectedNode
+        ? nds.find((n) => n.id === selectedNode.id)
+        : nds[nds.length - 1]
 
-      // Auto-connect to selected node or last node
-      const newNodes = [...nds, newNode]
-      if (referenceNode) {
-        const newEdge: Edge = {
-          id: `e-${referenceNode.id}-${newNode.id}`,
-          source: referenceNode.id,
-          target: newNode.id,
-          animated: true,
-          style: { stroke: '#3b82f6', strokeWidth: 2 },
-        }
-        setEdges((eds) => [...eds, newEdge])
-      }
+    const children = edges.filter(e => e.source === referenceNode?.id)
 
-      return newNodes
-    })
-    setIsAddNodeOpen(false)
-    toast.success('Node added', {
-      description: 'Connected to the workflow flow.'
-    })
-  }, [setNodes, setEdges, deleteNode, selectedNode])
+    const spacingX = 180
+    const spacingY = 140
 
-  const onConnect = useCallback(
-    (connection: Connection) => {
-      const newEdge: Edge = {
-        id: `e-${Date.now()}`,
-        source: connection.source!,
-        target: connection.target!,
+    let x =
+      referenceNode
+        ? referenceNode.position.x -
+          ((children.length * spacingX) / 2) +
+          children.length * spacingX
+        : 200
+
+    let y = referenceNode ? referenceNode.position.y + spacingY : 50
+
+    // ✅ collision avoidance
+    while (
+      nds.some(
+        (n) =>
+          Math.abs(n.position.x - x) < 120 &&
+          Math.abs(n.position.y - y) < 100
+      )
+    ) {
+      y += spacingY
+    }
+
+    const newNode: Node = {
+      id: crypto.randomUUID(),
+      type,
+      position: { x, y },
+      data: { label, description: '', onDelete: deleteNode },
+    }
+
+    // ✅ add edge safely
+    if (referenceNode) {
+      setEdges((eds) => {
+        const exists = eds.some(
+          (e) =>
+            e.source === referenceNode.id &&
+            e.target === newNode.id
+        )
+
+        if (exists) return eds
+
+        return [
+          ...eds,
+          {
+            id: `${referenceNode.id}-${newNode.id}`,
+            source: referenceNode.id,
+            target: newNode.id,
+            animated: true,
+            style: { stroke: '#3b82f6', strokeWidth: 2 },
+          },
+        ]
+      })
+    }
+
+    return [...nds, newNode]
+  })
+
+  setIsAddNodeOpen(false)
+}, [selectedNode, edges, setNodes, setEdges, deleteNode])
+
+const onConnect = useCallback((connection: Connection) => {
+  setEdges((eds) => {
+    const exists = eds.some(
+      (e) =>
+        e.source === connection.source &&
+        e.target === connection.target
+    )
+
+    if (exists) return eds
+
+    return addEdge(
+      {
+        ...connection,
+        id: `${connection.source}-${connection.target}`,
         animated: true,
         style: { stroke: '#3b82f6', strokeWidth: 2 },
-      }
-      setEdges((eds) => addEdge(newEdge, eds))
-    },
-    [setEdges]
-  )
+      },
+      eds
+    )
+  })
+}, [setEdges])
 
   const handleNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
     event.stopPropagation()
@@ -211,7 +287,7 @@ export function WorkflowCanvas({ isNew = false, workflowName = 'Untitled Workflo
         setSelectedNode(null)
       }
     }
-    
+
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [selectedNode])
@@ -234,7 +310,7 @@ export function WorkflowCanvas({ isNew = false, workflowName = 'Untitled Workflo
             const hasTrigger = nodes.some((n) => n.type === 'trigger')
             const isDisabled = category.name !== 'Trigger' && !hasTrigger
             const hasTriggerAlready = category.name === 'Trigger' && hasTrigger
-            
+
             return (
               <div key={category.name}>
                 <button
@@ -244,11 +320,10 @@ export function WorkflowCanvas({ isNew = false, workflowName = 'Untitled Workflo
                     }
                   }}
                   disabled={isDisabled || hasTriggerAlready}
-                  className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg transition-colors text-left group ${
-                    isDisabled || hasTriggerAlready
-                      ? 'opacity-40 cursor-not-allowed'
-                      : 'hover:bg-accent/20'
-                  }`}
+                  className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg transition-colors text-left group ${isDisabled || hasTriggerAlready
+                    ? 'opacity-40 cursor-not-allowed'
+                    : 'hover:bg-accent/20'
+                    }`}
                 >
                   <Icon className={`h-4 w-4 ${category.color}`} />
                   <div className="flex-1 min-w-0">
@@ -335,7 +410,7 @@ export function WorkflowCanvas({ isNew = false, workflowName = 'Untitled Workflo
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             onNodeClick={handleNodeClick}
-            onPaneClick={handleCanvasClick}
+            onPaneClick={() => setSelectedNode(null)}
             nodeTypes={nodeTypes}
             fitView
           >
