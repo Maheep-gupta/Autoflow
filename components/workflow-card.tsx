@@ -50,7 +50,7 @@ export function WorkflowCard({ workflow }: WorkflowCardProps) {
       </div>
 
       <div className="flex gap-2">
-        <Link href={`/workflow/${workflow.id}`} className="flex-1">
+        <Link href={`/workflow/${workflow.id}?projectId=${workflow.projectId}`} className="flex-1">
           <Button variant="default" size="sm" className="w-full gap-2">
             <Edit2 className="h-4 w-4" />
             Edit

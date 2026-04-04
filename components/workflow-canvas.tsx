@@ -16,7 +16,8 @@ import { nodeTypes } from './workflow-nodes'
 import { ConfigPanel } from './config-panel'
 import { AddNodeModal } from './add-node-modal'
 import { Button } from '@/components/ui/button'
-import { Plus, Trash2, Zap, GitBranch } from 'lucide-react'
+import { getDefaultParams, TYPE_LABELS } from '@/lib/node-schema'
+import { Plus, Trash2, Zap, GitBranch, Clock, Database, Code } from 'lucide-react'
 import { toast } from 'sonner'
 
 const initialNodes: Node[] = []
@@ -42,47 +43,59 @@ const nodeCategories = [
     description: 'Start your workflow',
     types: ['trigger'],
     color: 'text-yellow-500',
-    examples: ['Gmail', 'Webhook', 'Schedule'],
+    examples: ['Webhook', 'Schedule', 'Trigger'],
   },
   {
-    name: 'Action',
+    name: 'Navigation',
     icon: GitBranch,
-    description: 'Do something',
-    types: ['action', 'openBrowser', 'fillInput', 'clickElement', 'selectDropdown', 'getText'],
-    color: 'text-green-500',
-    examples: ['Send Email', 'Slack Message', 'Notion'],
-  },
-  {
-    name: 'Condition',
-    icon: GitBranch,
-    description: 'Add logic',
-    types: ['condition', 'if', 'else', 'ifElse', 'switch'],
+    description: 'Control page movement',
+    types: ['goToUrl', 'goBack', 'reloadPage'],
     color: 'text-blue-500',
-    examples: ['If...Then', 'Switch', 'Delay'],
+    examples: ['Go To URL', 'Go Back', 'Reload Page'],
+  },
+  {
+    name: 'Interaction',
+    icon: GitBranch,
+    description: 'Interact with users and forms',
+    types: ['click', 'typeText', 'clearInput', 'selectOption', 'check', 'uncheck', 'hover', 'pressKey'],
+    color: 'text-green-500',
+    examples: ['Click', 'Type Text', 'Select Option'],
+  },
+  {
+    name: 'Wait',
+    icon: Clock,
+    description: 'Pause until events happen',
+    types: ['waitForElement', 'waitForNavigation', 'waitForTimeout', 'waitForUrl'],
+    color: 'text-cyan-500',
+    examples: ['Wait For Element', 'Wait For Timeout', 'Wait For URL'],
+  },
+  {
+    name: 'Data',
+    icon: Database,
+    description: 'Read or store values',
+    types: ['getText', 'getAttribute', 'getElements', 'setVariable', 'getVariable'],
+    color: 'text-amber-500',
+    examples: ['Get Text', 'Set Variable'],
+  },
+  {
+    name: 'Control',
+    icon: GitBranch,
+    description: 'Branch and repeat actions',
+    types: ['if', 'forEach', 'try', 'catch', 'retry'],
+    color: 'text-purple-500',
+    examples: ['If', 'For Each', 'Retry'],
+  },
+  {
+    name: 'Advanced',
+    icon: Code,
+    description: 'Use scripts and HTTP',
+    types: ['executeScript', 'httpRequest'],
+    color: 'text-pink-500',
+    examples: ['Execute Script', 'HTTP Request'],
   },
 ]
 
-const typeNames: { [key: string]: string } = {
-  trigger: 'Trigger',
-  action: 'Action',
-  condition: 'Condition',
-  delay: 'Delay',
-  webhook: 'Webhook',
-  apiRequest: 'API Request',
-  if: 'If',
-  else: 'Else',
-  ifElse: 'If-Else',
-  switch: 'Switch',
-  forLoop: 'For Loop',
-  whileLoop: 'While Loop',
-  openBrowser: 'Open URL',
-  fillInput: 'Fill Input',
-  clickElement: 'Click Element',
-  selectDropdown: 'Select Dropdown',
-  getText: 'Get Text',
-  checkExists: 'Check Exists',
-  screenshot: 'Screenshot',
-}
+// Use schema-backed type labels for node defaults and fallbacks. No hardcoded title text is needed outside shared definitions.
 
 export function WorkflowCanvas({ 
   isNew = false, 
@@ -175,6 +188,16 @@ const getSmartPosition = (
   setSelectedNode(null)
 }, [setNodes, setEdges])
 
+  const handleNodeUpdate = useCallback((updatedNode: Node) => {
+    setNodes((nds: Node[]) =>
+      nds.map((n: Node) => (n.id === updatedNode.id ? updatedNode : n))
+    )
+
+    if (selectedNode?.id === updatedNode.id) {
+      setSelectedNode(updatedNode)
+    }
+  }, [selectedNode, setNodes])
+
   // Add node with auto-positioning and validation
 const addNode = useCallback((type: string) => {
   setNodes((nds: Node[]) => {
@@ -191,7 +214,7 @@ const addNode = useCallback((type: string) => {
     }
 
     const sameTypeNodes = nds.filter((n: Node) => n.type === type).length + 1
-    const label = `${typeNames[type] || type} ${sameTypeNodes}`
+    const label = `${TYPE_LABELS[type] || type} ${sameTypeNodes}`
 
     const referenceNode =
       selectedNode
@@ -227,7 +250,11 @@ const addNode = useCallback((type: string) => {
       id: crypto.randomUUID(),
       type,
       position: { x, y },
-      data: { label, description: '', onDelete: deleteNode },
+      data: {
+        label,
+        params: getDefaultParams(type),
+        onDelete: deleteNode,
+      },
     }
 
     // ✅ add edge safely
@@ -481,11 +508,7 @@ const onConnect = useCallback((connection: Connection) => {
             <ConfigPanel
               node={selectedNode}
               onDelete={deleteSelectedNode}
-              onChange={(updatedNode: Node) => {
-                setNodes((nds: Node[]) =>
-                  nds.map((n: Node) => (n.id === updatedNode.id ? updatedNode : n))
-                )
-              }}
+              onChange={handleNodeUpdate}
             />
           ) : (
             <div className="p-5 text-sm text-muted-foreground text-center space-y-3 h-full flex flex-col items-center justify-center">

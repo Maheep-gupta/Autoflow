@@ -1,16 +1,10 @@
-'use client'
-
-import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { Suspense } from 'react'
+import NewWorkflowPageClient from './NewWorkflowPageClient'
 
 export default function NewWorkflowPage() {
-  const router = useRouter()
-
-  useEffect(() => {
-    // Auto-generate workflow ID and go directly to builder
-    const workflowId = `workflow-${Date.now()}`
-    router.push(`/workflow/${workflowId}`)
-  }, [router])
-
-  return null
+  return (
+    <Suspense fallback={null}>
+      <NewWorkflowPageClient />
+    </Suspense>
+  )
 }

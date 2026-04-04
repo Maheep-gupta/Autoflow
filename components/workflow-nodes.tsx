@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+﻿import React, { useState } from 'react'
 import { Handle, Position, NodeProps } from 'reactflow'
 import {
   Globe,
@@ -26,6 +26,7 @@ import {
   Network,
   X,
 } from 'lucide-react'
+import { TYPE_LABELS } from '@/lib/node-schema'
 
 interface CustomNodeData {
   label: string
@@ -35,6 +36,11 @@ interface CustomNodeData {
 
 interface ExtendedNodeProps extends NodeProps<CustomNodeData> {
   id: string
+}
+
+const getNodeDisplayLabel = (type: string, label?: string) => {
+  const trimmed = label?.trim()
+  return trimmed || TYPE_LABELS[type] || type
 }
 
 // Navigation Nodes
@@ -68,9 +74,9 @@ export const GoToUrlNode = (props: ExtendedNodeProps) => {
       )}
       <div className="flex items-center gap-2 mb-2">
         <Globe className="h-4 w-4" />
-        <span className="font-semibold text-sm">Go To URL</span>
+        <span className="sr-only">Go To URL</span>
       </div>
-      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+      <p className="font-semibold text-sm text-foreground">{getNodeDisplayLabel(props.type, props.data.label)}</p>
     </div>
   )
 }
@@ -105,9 +111,9 @@ export const GoBackNode = (props: ExtendedNodeProps) => {
       )}
       <div className="flex items-center gap-2 mb-2">
         <RotateCcw className="h-4 w-4" />
-        <span className="font-semibold text-sm">Go Back</span>
+        <span className="sr-only">Go Back</span>
       </div>
-      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+      <p className="font-semibold text-sm text-foreground">{getNodeDisplayLabel(props.type, props.data.label)}</p>
     </div>
   )
 }
@@ -142,9 +148,9 @@ export const ReloadPageNode = (props: ExtendedNodeProps) => {
       )}
       <div className="flex items-center gap-2 mb-2">
         <RefreshCw className="h-4 w-4" />
-        <span className="font-semibold text-sm">Reload Page</span>
+        <span className="sr-only">Reload Page</span>
       </div>
-      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+      <p className="font-semibold text-sm text-foreground">{getNodeDisplayLabel(props.type, props.data.label)}</p>
     </div>
   )
 }
@@ -180,9 +186,9 @@ export const ClickNode = (props: ExtendedNodeProps) => {
       )}
       <div className="flex items-center gap-2 mb-2">
         <MousePointer className="h-4 w-4" />
-        <span className="font-semibold text-sm">Click</span>
+        <span className="sr-only">Click</span>
       </div>
-      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+      <p className="font-semibold text-sm text-foreground">{getNodeDisplayLabel(props.type, props.data.label)}</p>
     </div>
   )
 }
@@ -217,9 +223,9 @@ export const TypeTextNode = (props: ExtendedNodeProps) => {
       )}
       <div className="flex items-center gap-2 mb-2">
         <Type className="h-4 w-4" />
-        <span className="font-semibold text-sm">Type Text</span>
+        <span className="sr-only">Type Text</span>
       </div>
-      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+      <p className="font-semibold text-sm text-foreground">{getNodeDisplayLabel(props.type, props.data.label)}</p>
     </div>
   )
 }
@@ -254,9 +260,9 @@ export const ClearInputNode = (props: ExtendedNodeProps) => {
       )}
       <div className="flex items-center gap-2 mb-2">
         <Trash2 className="h-4 w-4" />
-        <span className="font-semibold text-sm">Clear Input</span>
+        <span className="sr-only">Clear Input</span>
       </div>
-      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+      <p className="font-semibold text-sm text-foreground">{getNodeDisplayLabel(props.type, props.data.label)}</p>
     </div>
   )
 }
@@ -291,9 +297,9 @@ export const SelectOptionNode = (props: ExtendedNodeProps) => {
       )}
       <div className="flex items-center gap-2 mb-2">
         <List className="h-4 w-4" />
-        <span className="font-semibold text-sm">Select Option</span>
+        <span className="sr-only">Select Option</span>
       </div>
-      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+      <p className="font-semibold text-sm text-foreground">{getNodeDisplayLabel(props.type, props.data.label)}</p>
     </div>
   )
 }
@@ -328,9 +334,9 @@ export const CheckNode = (props: ExtendedNodeProps) => {
       )}
       <div className="flex items-center gap-2 mb-2">
         <CheckSquare className="h-4 w-4" />
-        <span className="font-semibold text-sm">Check</span>
+        <span className="sr-only">Check</span>
       </div>
-      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+      <p className="font-semibold text-sm text-foreground">{getNodeDisplayLabel(props.type, props.data.label)}</p>
     </div>
   )
 }
@@ -365,9 +371,9 @@ export const UncheckNode = (props: ExtendedNodeProps) => {
       )}
       <div className="flex items-center gap-2 mb-2">
         <Square className="h-4 w-4" />
-        <span className="font-semibold text-sm">Uncheck</span>
+        <span className="sr-only">Uncheck</span>
       </div>
-      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+      <p className="font-semibold text-sm text-foreground">{getNodeDisplayLabel(props.type, props.data.label)}</p>
     </div>
   )
 }
@@ -402,9 +408,9 @@ export const HoverNode = (props: ExtendedNodeProps) => {
       )}
       <div className="flex items-center gap-2 mb-2">
         <Hand className="h-4 w-4" />
-        <span className="font-semibold text-sm">Hover</span>
+        <span className="sr-only">Hover</span>
       </div>
-      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+      <p className="font-semibold text-sm text-foreground">{getNodeDisplayLabel(props.type, props.data.label)}</p>
     </div>
   )
 }
@@ -439,9 +445,9 @@ export const PressKeyNode = (props: ExtendedNodeProps) => {
       )}
       <div className="flex items-center gap-2 mb-2">
         <Keyboard className="h-4 w-4" />
-        <span className="font-semibold text-sm">Press Key</span>
+        <span className="sr-only">Press Key</span>
       </div>
-      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+      <p className="font-semibold text-sm text-foreground">{getNodeDisplayLabel(props.type, props.data.label)}</p>
     </div>
   )
 }
@@ -477,9 +483,9 @@ export const WaitForElementNode = (props: ExtendedNodeProps) => {
       )}
       <div className="flex items-center gap-2 mb-2">
         <Clock className="h-4 w-4" />
-        <span className="font-semibold text-sm">Wait For Element</span>
+        <span className="sr-only">Wait For Element</span>
       </div>
-      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+      <p className="font-semibold text-sm text-foreground">{getNodeDisplayLabel(props.type, props.data.label)}</p>
     </div>
   )
 }
@@ -514,9 +520,9 @@ export const WaitForNavigationNode = (props: ExtendedNodeProps) => {
       )}
       <div className="flex items-center gap-2 mb-2">
         <Hourglass className="h-4 w-4" />
-        <span className="font-semibold text-sm">Wait For Navigation</span>
+        <span className="sr-only">Wait For Navigation</span>
       </div>
-      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+      <p className="font-semibold text-sm text-foreground">{getNodeDisplayLabel(props.type, props.data.label)}</p>
     </div>
   )
 }
@@ -551,9 +557,9 @@ export const WaitForTimeoutNode = (props: ExtendedNodeProps) => {
       )}
       <div className="flex items-center gap-2 mb-2">
         <Clock className="h-4 w-4" />
-        <span className="font-semibold text-sm">Wait For Timeout</span>
+        <span className="sr-only">Wait For Timeout</span>
       </div>
-      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+      <p className="font-semibold text-sm text-foreground">{getNodeDisplayLabel(props.type, props.data.label)}</p>
     </div>
   )
 }
@@ -588,9 +594,9 @@ export const WaitForUrlNode = (props: ExtendedNodeProps) => {
       )}
       <div className="flex items-center gap-2 mb-2">
         <Link2 className="h-4 w-4" />
-        <span className="font-semibold text-sm">Wait For URL</span>
+        <span className="sr-only">Wait For URL</span>
       </div>
-      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+      <p className="font-semibold text-sm text-foreground">{getNodeDisplayLabel(props.type, props.data.label)}</p>
     </div>
   )
 }
@@ -626,9 +632,9 @@ export const GetTextNode = (props: ExtendedNodeProps) => {
       )}
       <div className="flex items-center gap-2 mb-2">
         <Eye className="h-4 w-4" />
-        <span className="font-semibold text-sm">Get Text</span>
+        <span className="sr-only">Get Text</span>
       </div>
-      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+      <p className="font-semibold text-sm text-foreground">{getNodeDisplayLabel(props.type, props.data.label)}</p>
     </div>
   )
 }
@@ -663,9 +669,9 @@ export const GetAttributeNode = (props: ExtendedNodeProps) => {
       )}
       <div className="flex items-center gap-2 mb-2">
         <Copy className="h-4 w-4" />
-        <span className="font-semibold text-sm">Get Attribute</span>
+        <span className="sr-only">Get Attribute</span>
       </div>
-      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+      <p className="font-semibold text-sm text-foreground">{getNodeDisplayLabel(props.type, props.data.label)}</p>
     </div>
   )
 }
@@ -700,9 +706,9 @@ export const GetElementsNode = (props: ExtendedNodeProps) => {
       )}
       <div className="flex items-center gap-2 mb-2">
         <Database className="h-4 w-4" />
-        <span className="font-semibold text-sm">Get Elements</span>
+        <span className="sr-only">Get Elements</span>
       </div>
-      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+      <p className="font-semibold text-sm text-foreground">{getNodeDisplayLabel(props.type, props.data.label)}</p>
     </div>
   )
 }
@@ -737,9 +743,9 @@ export const SetVariableNode = (props: ExtendedNodeProps) => {
       )}
       <div className="flex items-center gap-2 mb-2">
         <Settings className="h-4 w-4" />
-        <span className="font-semibold text-sm">Set Variable</span>
+        <span className="sr-only">Set Variable</span>
       </div>
-      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+      <p className="font-semibold text-sm text-foreground">{getNodeDisplayLabel(props.type, props.data.label)}</p>
     </div>
   )
 }
@@ -774,9 +780,9 @@ export const GetVariableNode = (props: ExtendedNodeProps) => {
       )}
       <div className="flex items-center gap-2 mb-2">
         <Database className="h-4 w-4" />
-        <span className="font-semibold text-sm">Get Variable</span>
+        <span className="sr-only">Get Variable</span>
       </div>
-      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+      <p className="font-semibold text-sm text-foreground">{getNodeDisplayLabel(props.type, props.data.label)}</p>
     </div>
   )
 }
@@ -813,9 +819,9 @@ export const IfNode = (props: ExtendedNodeProps) => {
       )}
       <div className="flex items-center gap-2 mb-2">
         <GitBranch className="h-4 w-4" />
-        <span className="font-semibold text-sm">If</span>
+        <span className="sr-only">If</span>
       </div>
-      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+      <p className="font-semibold text-sm text-foreground">{getNodeDisplayLabel(props.type, props.data.label)}</p>
     </div>
   )
 }
@@ -851,9 +857,9 @@ export const ForEachNode = (props: ExtendedNodeProps) => {
       )}
       <div className="flex items-center gap-2 mb-2">
         <Repeat className="h-4 w-4" />
-        <span className="font-semibold text-sm">For Each</span>
+        <span className="sr-only">For Each</span>
       </div>
-      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+      <p className="font-semibold text-sm text-foreground">{getNodeDisplayLabel(props.type, props.data.label)}</p>
     </div>
   )
 }
@@ -888,9 +894,9 @@ export const TryNode = (props: ExtendedNodeProps) => {
       )}
       <div className="flex items-center gap-2 mb-2">
         <AlertTriangle className="h-4 w-4" />
-        <span className="font-semibold text-sm">Try</span>
+        <span className="sr-only">Try</span>
       </div>
-      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+      <p className="font-semibold text-sm text-foreground">{getNodeDisplayLabel(props.type, props.data.label)}</p>
     </div>
   )
 }
@@ -925,9 +931,9 @@ export const CatchNode = (props: ExtendedNodeProps) => {
       )}
       <div className="flex items-center gap-2 mb-2">
         <AlertTriangle className="h-4 w-4" />
-        <span className="font-semibold text-sm">Catch</span>
+        <span className="sr-only">Catch</span>
       </div>
-      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+      <p className="font-semibold text-sm text-foreground">{getNodeDisplayLabel(props.type, props.data.label)}</p>
     </div>
   )
 }
@@ -962,9 +968,9 @@ export const RetryNode = (props: ExtendedNodeProps) => {
       )}
       <div className="flex items-center gap-2 mb-2">
         <Repeat className="h-4 w-4" />
-        <span className="font-semibold text-sm">Retry</span>
+        <span className="sr-only">Retry</span>
       </div>
-      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+      <p className="font-semibold text-sm text-foreground">{getNodeDisplayLabel(props.type, props.data.label)}</p>
     </div>
   )
 }
@@ -1000,9 +1006,9 @@ export const ExecuteScriptNode = (props: ExtendedNodeProps) => {
       )}
       <div className="flex items-center gap-2 mb-2">
         <Code className="h-4 w-4" />
-        <span className="font-semibold text-sm">Execute Script</span>
+        <span className="sr-only">Execute Script</span>
       </div>
-      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+      <p className="font-semibold text-sm text-foreground">{getNodeDisplayLabel(props.type, props.data.label)}</p>
     </div>
   )
 }
@@ -1037,9 +1043,9 @@ export const HttpRequestNode = (props: ExtendedNodeProps) => {
       )}
       <div className="flex items-center gap-2 mb-2">
         <Network className="h-4 w-4" />
-        <span className="font-semibold text-sm">HTTP Request</span>
+        <span className="sr-only">HTTP Request</span>
       </div>
-      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+      <p className="font-semibold text-sm text-foreground">{getNodeDisplayLabel(props.type, props.data.label)}</p>
     </div>
   )
 }
@@ -1075,10 +1081,10 @@ export const TriggerNode = (props: ExtendedNodeProps) => {
       )}
       <div className="flex items-center gap-2 mb-2">
         <AlertTriangle className="h-4 w-4 text-yellow-600" />
-        <span className="font-semibold text-sm">Trigger</span>
+        <span className="sr-only">Trigger</span>
         <span className="ml-auto text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 px-2 py-0.5 rounded-full">Start</span>
       </div>
-      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+      <p className="font-semibold text-sm text-foreground">{getNodeDisplayLabel(props.type, props.data.label)}</p>
     </div>
   )
 }
@@ -1113,9 +1119,9 @@ export const ActionNode = (props: ExtendedNodeProps) => {
       )}
       <div className="flex items-center gap-2 mb-2">
         <GitBranch className="h-4 w-4 text-green-600" />
-        <span className="font-semibold text-sm">Action</span>
+        <span className="sr-only">Action</span>
       </div>
-      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+      <p className="font-semibold text-sm text-foreground">{getNodeDisplayLabel(props.type, props.data.label)}</p>
     </div>
   )
 }
@@ -1150,9 +1156,9 @@ export const ConditionNode = (props: ExtendedNodeProps) => {
       )}
       <div className="flex items-center gap-2 mb-2">
         <GitBranch className="h-4 w-4 text-blue-600" />
-        <span className="font-semibold text-sm">Condition</span>
+        <span className="sr-only">Condition</span>
       </div>
-      <p className="text-xs text-muted-foreground">{props.data.label}</p>
+      <p className="font-semibold text-sm text-foreground">{getNodeDisplayLabel(props.type, props.data.label)}</p>
     </div>
   )
 }
@@ -1196,3 +1202,5 @@ export const nodeTypes = {
   executeScript: ExecuteScriptNode,
   httpRequest: HttpRequestNode,
 }
+
+
